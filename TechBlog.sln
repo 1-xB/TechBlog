@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TechBlogAPI", "TechBlogAPI\TechBlogAPI.csproj", "{DB7B7CB5-DD0B-4275-BB09-B408671EF313}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TechBlogAPI.Client", "TechBlogAPI.Client\TechBlogAPI.Client.csproj", "{CFC8C676-FEF4-412B-ABCF-0BFEAC1608AD}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DB7B7CB5-DD0B-4275-BB09-B408671EF313}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DB7B7CB5-DD0B-4275-BB09-B408671EF313}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DB7B7CB5-DD0B-4275-BB09-B408671EF313}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DB7B7CB5-DD0B-4275-BB09-B408671EF313}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CFC8C676-FEF4-412B-ABCF-0BFEAC1608AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CFC8C676-FEF4-412B-ABCF-0BFEAC1608AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CFC8C676-FEF4-412B-ABCF-0BFEAC1608AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CFC8C676-FEF4-412B-ABCF-0BFEAC1608AD}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
