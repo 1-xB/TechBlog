@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using Scalar.AspNetCore;
 using TechBlogAPI.Data;
+using TechBlogAPI.Endpoints;
 
 namespace TechBlogAPI;
 
@@ -26,8 +28,10 @@ public class Program
         if (app.Environment.IsDevelopment())
         {
             app.MapOpenApi();
+            app.MapScalarApiReference();
         }
 
+        app.MapPostRoutes();
         app.UseHttpsRedirection();
 
         app.UseAuthorization();
