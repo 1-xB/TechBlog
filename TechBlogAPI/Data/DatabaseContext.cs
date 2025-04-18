@@ -46,7 +46,7 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options) : DbCont
             entity.Property(e => e.PasswordSalt).IsRequired().HasMaxLength(255);
             entity.Property(e => e.Role).IsRequired().HasMaxLength(30);
 
-            entity.Property(e => e.RefreshToken).IsRequired().HasMaxLength(255);
+            entity.Property(e => e.RefreshToken).HasMaxLength(255);
             entity.Property(e => e.RefreshTokenExpiryDate).IsRequired();
             
             entity.HasOne(e => e.Author)
