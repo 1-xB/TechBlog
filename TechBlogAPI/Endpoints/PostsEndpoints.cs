@@ -1,5 +1,8 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using TechBlogAPI.Data;
+using TechBlogAPI.Dtos;
+using TechBlogAPI.Entity;
 
 namespace TechBlogAPI.Endpoints;
 
@@ -48,6 +51,27 @@ public static class PostsEndpoints
                 }
             }).FirstOrDefaultAsync();
             return post is null ? Results.NotFound() : Results.Ok(post);
+        });
+        
+        // TODO: [Authorize(Roles = "Author, Admin")]
+        group.MapPost("/",  async (DatabaseContext dbContext, AddPostDto newPost) =>
+        {
+            var author = await dbContext.Authors.FindAsync(newPost.AuthorId);
+            if (author is null)
+            {
+                return Results.NotFound($"Author id : {newPost.AuthorId} is not exist!");
+            }
+            var post = new Post
+            {
+                Content = newPost.Content,
+                Title = newPost.Title,
+                AuthorId = newPost.AuthorId,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow,
+            };
+            await dbContext.Posts.AddAsync(post);
+            await dbContext.SaveChangesAsync();
+            return Results.Ok();
         });
 
         return group;
