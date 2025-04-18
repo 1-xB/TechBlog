@@ -44,10 +44,17 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options) : DbCont
             entity.Property(e => e.PasswordHash).IsRequired().HasMaxLength(255);
             entity.Property(e => e.PasswordSalt).IsRequired().HasMaxLength(255);
             entity.Property(e => e.Role).IsRequired().HasMaxLength(30);
+
+            entity.Property(e => e.RefreshToken).IsRequired().HasMaxLength(255);
+            entity.Property(e => e.RefreshTokenExpiryDate).IsRequired();
+            
             entity.HasOne(e => e.Author)
                 .WithOne(a => a.User)
                 .HasForeignKey<Author>(a => a.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(e => e.Username).IsUnique();
+            entity.HasIndex(e => e.Email).IsUnique();
         });
     }
 }
