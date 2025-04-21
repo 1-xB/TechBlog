@@ -13,6 +13,9 @@ public static class AuthEndpoints
 
         group.MapPost("/register", async (IAuthService auth, RegisterDto model) =>
         {
+            if (string.IsNullOrWhiteSpace(model.Username) || string.IsNullOrWhiteSpace(model.Email) || string.IsNullOrWhiteSpace(model.Password)) {
+                return Results.BadRequest(new { message = "All fields are required." });
+            }
             var result = await auth.RegisterAsync(model);
             if (!result.Succeeded)
             {
@@ -23,10 +26,16 @@ public static class AuthEndpoints
         });
 
         group.MapPost("register-author", [Authorize(Policy = "AdminOnly")] async (IAuthService auth, RegisterAuthorDto model) => {
+            if (string.IsNullOrWhiteSpace(model.Username) || string.IsNullOrWhiteSpace(model.Email) 
+            || string.IsNullOrWhiteSpace(model.Password) || string.IsNullOrWhiteSpace(model.FirstName) || string.IsNullOrWhiteSpace(model.LastName))
+            {
+            return Results.BadRequest(new { message = "All fields are required." });
+            }
+
             var result = await auth.RegisterAuthorAsync(model);
             if (!result.Succeeded)
             {
-                return Results.BadRequest(new {message = result.Message});
+            return Results.BadRequest(new {message = result.Message});
             }
 
             return Results.Ok(new {message = result.Message});

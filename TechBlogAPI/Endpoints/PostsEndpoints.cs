@@ -69,6 +69,14 @@ public static class PostsEndpoints
         group.MapPost("/", [Authorize(Policy = "AuthorOnly")] async (DatabaseContext dbContext, AddPostDto newPost, ClaimsPrincipal user) =>
         {
             try {
+                if (string.IsNullOrWhiteSpace(newPost.Content) || string.IsNullOrWhiteSpace(newPost.Title)) {
+                    return Results.BadRequest(new {message = "Title and content can't be empty"});
+                }
+
+                if (newPost.Title.Length > 100) {
+                    return Results.BadRequest(new {message = "Title cannot exceed 100 characters"});
+                }
+
                 var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
 
                 var author = await dbContext.Authors.FirstOrDefaultAsync(a => a.UserId.ToString() == userId);
@@ -128,6 +136,15 @@ public static class PostsEndpoints
 
         group.MapPut("/{id:int}", [Authorize(Policy = "AuthorOnly")] async (int id, DatabaseContext dbContext,EditPostDto newPost, ClaimsPrincipal user) => {
             try {
+                
+                if (string.IsNullOrWhiteSpace(newPost.Content) || string.IsNullOrWhiteSpace(newPost.Title)) {
+                    return Results.BadRequest(new {message = "Title and content can't be empty"});
+                }
+
+                if (newPost.Title.Length > 100) {
+                    return Results.BadRequest(new {message = "Title cannot exceed 100 characters"});
+                }
+
                 var post = await dbContext.Posts.FirstOrDefaultAsync(p => p.PostId == id);
                 if (post is null) {
                     return Results.NotFound($"Post with id {id} does not exist.");
