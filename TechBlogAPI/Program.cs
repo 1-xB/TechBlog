@@ -15,6 +15,12 @@ public class Program
     public static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
+
+        builder.Services.AddControllers()
+        .AddJsonOptions(options =>
+        {
+            options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
+        });
         // JWT Configuration
         // Configure JWT settings
         builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JWT"));

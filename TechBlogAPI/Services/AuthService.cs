@@ -15,15 +15,16 @@ namespace TechBlogAPI.Services;
 public class AuthService(DatabaseContext context, IOptions<JwtSettings> jwtSettings) : IAuthService
 {
     
-    public async Task<(bool Succeeded, string Message)> RegisterAsync(RegisterDto model)
+    public async Task<(bool Succeeded, string Message, int? userId)> RegisterAsync(RegisterDto model)
     {
+        // TODO : ADD EMAIL VALIDATION
         if (await context.Users.AnyAsync(u => u.Username == model.Username))
         {
-            return (false, "Username already exists.");
+            return (false, "Username already exists.", null);
         }
         if (await context.Users.AnyAsync(u => u.Email == model.Email))
         {
-            return (false, "User with this email already exist.");
+            return (false, "User with this email already exist.", null);
         }
         
         CreatePasswordHash(model.Password, out byte[] passwordHash, out byte[] passwordSalt);
@@ -41,7 +42,43 @@ public class AuthService(DatabaseContext context, IOptions<JwtSettings> jwtSetti
         context.Users.Add(user);
         await context.SaveChangesAsync();
         
-        return (true, "User created successfully.");
+        return (true, "User created successfully.", user.UserId);
+    }
+
+    public async Task<(bool Succeeded, string Message)> RegisterAuthorAsync(RegisterAuthorDto model) {
+        using var transaction = await context.Database.BeginTransactionAsync();
+        try {
+            var registerModel = new RegisterDto {
+            Username = model.Username,
+            Email = model.Email,
+            Password = model.Password
+            };
+            var result = await RegisterAsync(registerModel);
+            if (!result.Succeeded) {
+                return (false, result.Message);
+            }
+
+            var author = new Author {
+                FirstName = model.FirstName,
+                LastName = model.LastName,
+                UserId = (int)result.userId
+            };
+
+            context.Authors.Add(author);
+            var user = await context.Users.FindAsync(result.userId);
+            if (user != null) {
+                user.Role = "Author";
+            }
+            await context.SaveChangesAsync();
+            await transaction.CommitAsync();
+            
+            return (true, "Author created successfully.");
+        }
+        catch (Exception ex) {
+            await transaction.RollbackAsync();
+            return (false, $"Failed to register author: {ex.Message}");
+        }
+        
     }
 
     public async Task<(bool Succeeded, AuthResponseDto Response, string Message)> LoginAsync(LoginDto model)
@@ -153,6 +190,7 @@ public class AuthService(DatabaseContext context, IOptions<JwtSettings> jwtSetti
         
         var claims = new List<Claim>
         {
+            new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
             new Claim(ClaimTypes.Name, user.Username),
             new Claim(ClaimTypes.Email, user.Email),
             new Claim(ClaimTypes.Role, user.Role),

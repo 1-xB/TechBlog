@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace TechBlogAPI.Entity;
 
 public class Author
@@ -6,6 +8,6 @@ public class Author
     public string FirstName { get; set; }
     public string LastName { get; set; }
     public int UserId { get; set; }
-    public User User { get; set; }
+    [JsonIgnore] public User User { get; set; }
     public ICollection<Post> Posts { get; set; }
 }

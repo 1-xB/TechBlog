@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace TechBlogAPI.Entity;
 
 public class User
@@ -10,5 +12,5 @@ public class User
     public string Role { get; set; }
     public string? RefreshToken { get; set; }
     public DateTime RefreshTokenExpiryDate { get; set; }
-    public Author Author { get; set; }
+    [JsonIgnore] public Author Author { get; set; }
 }

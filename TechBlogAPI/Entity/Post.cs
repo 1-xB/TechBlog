@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace TechBlogAPI.Entity;
 
 public class Post
@@ -8,5 +10,5 @@ public class Post
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
     public int AuthorId { get; set; }
-    public Author Author { get; set; }
+    [JsonIgnore] public Author Author { get; set; }
 }

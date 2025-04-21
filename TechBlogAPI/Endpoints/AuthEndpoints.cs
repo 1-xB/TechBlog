@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using TechBlogAPI.Dtos;
 using TechBlogAPI.Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace TechBlogAPI.Endpoints;
 
@@ -15,10 +16,20 @@ public static class AuthEndpoints
             var result = await auth.RegisterAsync(model);
             if (!result.Succeeded)
             {
-                return Results.BadRequest(result.Message);
+                return Results.BadRequest(new {message = result.Message});
             }
 
-            return Results.Ok(result.Message);
+            return Results.Ok(new {message = result.Message});
+        });
+
+        group.MapPost("register-author", [Authorize(Policy = "AdminOnly")] async (IAuthService auth, RegisterAuthorDto model) => {
+            var result = await auth.RegisterAuthorAsync(model);
+            if (!result.Succeeded)
+            {
+                return Results.BadRequest(new {message = result.Message});
+            }
+
+            return Results.Ok(new {message = result.Message});
         });
 
         group.MapPost("/login", async (IAuthService auth, LoginDto model) =>
@@ -26,10 +37,10 @@ public static class AuthEndpoints
             var result = await auth.LoginAsync(model);
             if (!result.Succeeded)
             {
-                return Results.BadRequest(result.Message);
+                return Results.BadRequest(new {message = result.Message});
             }
 
-            return Results.Ok(result.Response);
+            return Results.Ok(new {message = result.Response});
             
         });
 
@@ -41,7 +52,7 @@ public static class AuthEndpoints
                 return Results.Unauthorized();
             }
             
-            return Results.Ok(result.Response);
+            return Results.Ok(new {message = result.Response});
         });
         
         group.MapPost("/revoke-token", async (IAuthService auth, ClaimsPrincipal user) =>

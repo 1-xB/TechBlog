@@ -66,25 +66,38 @@ public static class PostsEndpoints
             
         });
         
-        group.MapPost("/", [Authorize(Policy = "AuthorOnly")] async (DatabaseContext dbContext, AddPostDto newPost) =>
+        group.MapPost("/", [Authorize(Policy = "AuthorOnly")] async (DatabaseContext dbContext, AddPostDto newPost, ClaimsPrincipal user) =>
         {
             try {
-                var author = await dbContext.Authors.FindAsync(newPost.AuthorId);
+                var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                var author = await dbContext.Authors.FirstOrDefaultAsync(a => a.UserId.ToString() == userId);
                 if (author is null)
                 {
-                    return Results.NotFound($"Author id : {newPost.AuthorId} is not exist!");
+                    return Results.NotFound($"Author with UserId : {userId} is not exist!");
                 }
                 var post = new Post
                 {
                     Content = newPost.Content,
                     Title = newPost.Title,
-                    AuthorId = newPost.AuthorId,
+                    AuthorId = author.AuthorId,
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow,
                 };
                 await dbContext.Posts.AddAsync(post);
                 await dbContext.SaveChangesAsync();
-                return Results.Ok();
+                return Results.Created($"/api/posts/{post.PostId}", new {
+                    post.PostId,
+                    post.Title,
+                    post.Content,
+                    post.CreatedAt,
+                    post.UpdatedAt,
+                    Author = new {
+                        post.Author.AuthorId,
+                        post.Author.FirstName,
+                        post.Author.LastName
+                    }
+                });
             }
             catch (Exception ex) {
                 return Results.Problem($"An error occurred: {ex.Message}");
@@ -94,23 +107,23 @@ public static class PostsEndpoints
         group.MapDelete("/{id:int}", [Authorize(Policy = "AuthorOnly")] async (int id, DatabaseContext dbContext, ClaimsPrincipal user) => {
             
             try {
+                var post = await dbContext.Posts.FirstOrDefaultAsync(p => p.PostId == id);
+                if (post is null) {
+                    return Results.NotFound($"Post with id {id} does not exist.");
+                }
 
+                if (!await CheckEditPermissions(user, post, dbContext)) {
+                    return Results.Forbid();
+                }
+
+                dbContext.Posts.Remove(post);
+                await dbContext.SaveChangesAsync();
+                return Results.Ok(new { message = $"Post with id {id} was successfully deleted" });
             }
             catch (Exception ex) {
                 return Results.Problem($"An error occurred: {ex.Message}");
             }
-            var post = await dbContext.Posts.FirstOrDefaultAsync(p => p.PostId == id);
-            if (post is null) {
-                return Results.NotFound($"Post with id {id} does not exist.");
-            }
-
-            if (!CanEdit(user, post)) {
-                return Results.Forbid();
-            }
-
-            dbContext.Posts.Remove(post);
-            await dbContext.SaveChangesAsync();
-            return Results.Ok(new { message = $"Post with id {id} was successfully deleted" });
+            
         });
 
         group.MapPut("/{id:int}", [Authorize(Policy = "AuthorOnly")] async (int id, DatabaseContext dbContext,EditPostDto newPost, ClaimsPrincipal user) => {
@@ -120,7 +133,7 @@ public static class PostsEndpoints
                     return Results.NotFound($"Post with id {id} does not exist.");
                 }
 
-                if (!CanEdit(user, post)) {
+                if (! await CheckEditPermissions(user, post, dbContext)) {
                     return Results.Forbid();
                 }
 
@@ -143,14 +156,14 @@ public static class PostsEndpoints
         return group;
     }
 
-    private static bool CanEdit(ClaimsPrincipal user, Post post) {
+    private static async Task<bool> CheckEditPermissions(ClaimsPrincipal user, Post post, DatabaseContext dbContext) {
         var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
         bool isAdmin = user.IsInRole("Admin");
-        bool isAuthor = user.IsInRole("Author");
-
-        if (!(isAdmin || (isAuthor && userId == post.AuthorId.ToString()))) {
-            return false;
-        }
-        return true;
+        
+        // Sprawdź czy zalogowany użytkownik jest autorem tego posta
+        var author = await dbContext.Authors.FirstOrDefaultAsync(a => a.UserId.ToString() == userId);
+        bool isPostAuthor = author != null && post.AuthorId == author.AuthorId;
+        
+        return isAdmin || isPostAuthor;
     }
 }
