@@ -58,6 +58,10 @@ public class AuthService(DatabaseContext context, IOptions<JwtSettings> jwtSetti
                 return (false, result.Message);
             }
 
+            if (result.userId is null) {
+                return (false, "UserId cannot be null");
+            }
+
             var author = new Author {
                 FirstName = model.FirstName,
                 LastName = model.LastName,
@@ -81,7 +85,7 @@ public class AuthService(DatabaseContext context, IOptions<JwtSettings> jwtSetti
         
     }
 
-    public async Task<(bool Succeeded, AuthResponseDto Response, string Message)> LoginAsync(LoginDto model)
+    public async Task<(bool Succeeded, AuthResponseDto? Response, string Message)> LoginAsync(LoginDto model)
     {
         var user = await context.Users.FirstOrDefaultAsync(u => u.Username == model.Username);
         if (user == null || !VerifyPasswordHash(model.Password, user.PasswordHash, user.PasswordSalt))
@@ -109,7 +113,7 @@ public class AuthService(DatabaseContext context, IOptions<JwtSettings> jwtSetti
         return (true, response, "Login successful.");
     }
 
-    public async Task<(bool Succeeded, AuthResponseDto Response, string Message)> RefreshTokenAsync(string refreshToken)
+    public async Task<(bool Succeeded, AuthResponseDto? Response, string Message)> RefreshTokenAsync(string refreshToken)
     {
         if (string.IsNullOrEmpty(refreshToken))
         {
@@ -160,14 +164,14 @@ public class AuthService(DatabaseContext context, IOptions<JwtSettings> jwtSetti
     }
     
     // ---------------------------- Password ----------------------------
-    private void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
+    private static void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
     {
         using var hmac = new HMACSHA512(); // When creating HMACSHA512, a random key is automatically generated
         passwordSalt = hmac.Key; // The generated key, we assign to salt
         passwordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password)); // Hash the password
     }
 
-    private bool VerifyPasswordHash(string password, byte[] storedHash, byte[] storedSalt)
+    private static bool VerifyPasswordHash(string password, byte[] storedHash, byte[] storedSalt)
     {
         using var hmac = new HMACSHA512(storedSalt);
         var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
@@ -208,7 +212,7 @@ public class AuthService(DatabaseContext context, IOptions<JwtSettings> jwtSetti
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
-    private string GenerateRefreshToken()
+    private static string GenerateRefreshToken()
     {
         var randomNumber = new byte[32];
         using var rng = RandomNumberGenerator.Create();
