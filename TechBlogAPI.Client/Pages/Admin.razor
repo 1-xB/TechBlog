@@ -3,6 +3,8 @@
 @using TechBlogAPI.Client.Models;
 @using Microsoft.AspNetCore.Components.Authorization
 @inject AuthService AuthService
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthStateProvider
 
 <div class="admin-login-container">
     <div class="login-card">
@@ -37,16 +39,8 @@
                     <i class="bi bi-box-arrow-in-right me-2"></i> Login
                 </button>
             </div>
+            <p class="text-danger">@LoginMessage</p>
         </EditForm>
-        <AuthorizeView>
-            <Authorized>
-                <h1>hi admin!</h1>
-            </Authorized>
-            <NotAuthorized>
-                <p>Login in first!</p>
-            </NotAuthorized>
-        </AuthorizeView>
-        <p>@message</p>
         
     </div>
 </div>
@@ -75,24 +69,33 @@
 
 @code {
     LoginModel loginModel = new();
-    string message;
+    string LoginMessage;
+    bool IsLoggedIn;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        if (authState.User.Identity?.IsAuthenticated == true) {
+            NavigationManager.NavigateTo("/admin/panel");
+        }
+    }
     private async Task OnValidSubmitAsync() {
         try
         {
             var result = await AuthService.LoginAsync(loginModel.Username, loginModel.Password);
-            
-            if (result)
+
+            if (!result)
             {
-                // todo: 
+                LoginMessage = "Wrong username or password!";
             }
             else
             {
-                // todo: 
+                NavigationManager.NavigateTo("/admin/panel");
             }
         }
         catch (Exception ex)
         {
-            // todo: 
+            LoginMessage = "Something went wrong! Try again later!";
         }
     }
 }
