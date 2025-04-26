@@ -106,8 +106,6 @@ public class AuthService(DatabaseContext context, IOptions<JwtSettings> jwtSetti
             AccessToken = accessToken,
             RefreshToken = refreshToken,
             ExpiresAt = DateTime.UtcNow.AddMinutes(jwtSettings.Value.AccessTokenExpiryInMinutes),
-            Username = user.Username,
-            Role = user.Role
         };
 
         return (true, response, "Login successful.");
@@ -143,8 +141,6 @@ public class AuthService(DatabaseContext context, IOptions<JwtSettings> jwtSetti
             AccessToken = accessToken,
             RefreshToken = newRefreshToken,
             ExpiresAt = DateTime.UtcNow.AddMinutes(jwtSettings.Value.AccessTokenExpiryInMinutes),
-            Username = user.Username,
-            Role = user.Role
         };
 
         return (true, response, "Token refresh successful");

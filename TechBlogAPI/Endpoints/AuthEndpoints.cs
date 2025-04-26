@@ -29,13 +29,13 @@ public static class AuthEndpoints
             if (string.IsNullOrWhiteSpace(model.Username) || string.IsNullOrWhiteSpace(model.Email) 
             || string.IsNullOrWhiteSpace(model.Password) || string.IsNullOrWhiteSpace(model.FirstName) || string.IsNullOrWhiteSpace(model.LastName))
             {
-            return Results.BadRequest(new { message = "All fields are required." });
+                return Results.BadRequest(new { message = "All fields are required." });
             }
 
             var result = await auth.RegisterAuthorAsync(model);
             if (!result.Succeeded)
             {
-            return Results.BadRequest(new {message = result.Message});
+                return Results.BadRequest(new {message = result.Message});
             }
 
             return Results.Ok(new {message = result.Message});
@@ -49,7 +49,7 @@ public static class AuthEndpoints
                 return Results.BadRequest(new {message = result.Message});
             }
 
-            return Results.Ok(new {message = result.Response});
+            return Results.Ok(result.Response);
             
         });
 
@@ -61,7 +61,7 @@ public static class AuthEndpoints
                 return Results.Unauthorized();
             }
             
-            return Results.Ok(new {message = result.Response});
+            return Results.Ok(result.Response);
         });
         
         group.MapPost("/revoke-token", async (IAuthService auth, ClaimsPrincipal user) =>

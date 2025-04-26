@@ -1,0 +1,98 @@
+@page "/admin"
+@using TechBlogAPI.Client.Auth
+@using TechBlogAPI.Client.Models;
+@using Microsoft.AspNetCore.Components.Authorization
+@inject AuthService AuthService
+
+<div class="admin-login-container">
+    <div class="login-card">
+        <h1 class="text-center mb-4">Admin Login</h1>
+        
+        <EditForm FormName="LoginForm" Model="@loginModel" OnValidSubmit="OnValidSubmitAsync" Enhance>
+            <DataAnnotationsValidator/>
+            <ValidationSummary class="text-danger mb-3" />
+
+            <div class="mb-4">
+                <label for="username" class="form-label">Username</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-person-fill"></i></span>
+                    <InputText class="form-control" id="username" @bind-Value="@loginModel.Username" 
+                               autocomplete="username" placeholder="Enter your username" />
+                </div>
+                <ValidationMessage For="@(() => loginModel.Username)" class="text-danger" />
+            </div>
+
+            <div class="mb-4">
+                <label for="password" class="form-label">Password</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
+                    <InputText type="password" class="form-control" id="password" @bind-Value="@loginModel.Password" 
+                               autocomplete="current-password" placeholder="Enter your password" />
+                </div>
+                <ValidationMessage For="@(() => loginModel.Password)" class="text-danger" />
+            </div>
+            
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary btn-lg" aria-label="Login">
+                    <i class="bi bi-box-arrow-in-right me-2"></i> Login
+                </button>
+            </div>
+        </EditForm>
+        <AuthorizeView>
+            <Authorized>
+                <h1>hi admin!</h1>
+            </Authorized>
+            <NotAuthorized>
+                <p>Login in first!</p>
+            </NotAuthorized>
+        </AuthorizeView>
+        <p>@message</p>
+        
+    </div>
+</div>
+
+<style>
+    .admin-login-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 80vh;
+    }
+    
+    .login-card {
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+        padding: 2rem;
+        width: 100%;
+        max-width: 450px;
+    }
+    
+    .input-group-text {
+        background-color: #f8f9fa;
+    }
+</style>
+
+@code {
+    LoginModel loginModel = new();
+    string message;
+    private async Task OnValidSubmitAsync() {
+        try
+        {
+            var result = await AuthService.LoginAsync(loginModel.Username, loginModel.Password);
+            
+            if (result)
+            {
+                // todo: 
+            }
+            else
+            {
+                // todo: 
+            }
+        }
+        catch (Exception ex)
+        {
+            // todo: 
+        }
+    }
+}

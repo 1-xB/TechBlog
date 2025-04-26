@@ -16,6 +16,16 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
+        builder.Services.AddCors(options =>
+        {
+            options.AddPolicy("AllowAll", policy =>
+            {
+                policy.AllowAnyOrigin()
+                    .AllowAnyHeader()
+                    .AllowAnyMethod();
+            });
+        });
+        
         builder.Services.AddControllers()
         .AddJsonOptions(options =>
         {
@@ -79,6 +89,7 @@ public class Program
             app.MapOpenApi();
             app.MapScalarApiReference();
         }
+        app.UseCors("AllowAll");
         
         // Routes
         app.MapPostRoutes();
