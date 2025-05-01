@@ -18,7 +18,7 @@ namespace TechBlogAPI.Client.Auth
                     Password = password
                 };
 
-                var response = await httpClient.PostAsJsonAsync("/api/auth/login", loginModel);
+                var response = await httpClient.PostAsJsonAsync("/api/auth/login-admin", loginModel);
                 if (response.IsSuccessStatusCode)
                 {
                     var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
