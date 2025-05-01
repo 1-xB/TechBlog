@@ -15,82 +15,69 @@ namespace TechBlogAPI.Services;
 public class AuthService(DatabaseContext context, IOptions<JwtSettings> jwtSettings) : IAuthService
 {
     
-    public async Task<(bool Succeeded, string Message, int? userId)> RegisterAsync(RegisterDto model)
+    public async Task<(bool Succeeded, string Message)> RegisterAsync(RegisterDto model, string role, string? firstName = null, string? lastName = null)
     {
-        // TODO : ADD EMAIL VALIDATION
-        if (await context.Users.AnyAsync(u => u.Username == model.Username))
-        {
-            return (false, "Username already exists.", null);
+        if (role == "Author" && firstName is null && lastName is null) {
+            return (false, "Author's first name and last name is null");
         }
-        if (await context.Users.AnyAsync(u => u.Email == model.Email))
-        {
-            return (false, "User with this email already exist.", null);
-        }
-        
-        CreatePasswordHash(model.Password, out byte[] passwordHash, out byte[] passwordSalt);
-
-        // Create user entity
-        var user = new User
-        {
-            Username = model.Username,
-            Email = model.Email,
-            PasswordHash = passwordHash,
-            PasswordSalt = passwordSalt,
-            Role = "User" // Default role
-        };
-        
-        context.Users.Add(user);
-        await context.SaveChangesAsync();
-        
-        return (true, "User created successfully.", user.UserId);
-    }
-
-    public async Task<(bool Succeeded, string Message)> RegisterAuthorAsync(RegisterAuthorDto model) {
         using var transaction = await context.Database.BeginTransactionAsync();
-        try {
-            var registerModel = new RegisterDto {
-            Username = model.Username,
-            Email = model.Email,
-            Password = model.Password
+        try 
+        {
+            // TODO : ADD EMAIL VALIDATION
+            if (await context.Users.AnyAsync(u => u.Username == model.Username))
+            {
+                return (false, "Username already exists.");
+            }
+            if (await context.Users.AnyAsync(u => u.Email == model.Email))
+            {
+                return (false, "User with this email already exist.");
+            }
+             
+            CreatePasswordHash(model.Password, out byte[] passwordHash, out byte[] passwordSalt);
+            var user = new User
+            {
+                Username = model.Username,
+                Email = model.Email,
+                PasswordHash = passwordHash,
+                PasswordSalt = passwordSalt,
+                Role = role
             };
-            var result = await RegisterAsync(registerModel);
-            if (!result.Succeeded) {
-                return (false, result.Message);
-            }
+                
+            context.Users.Add(user);
 
-            if (result.userId is null) {
-                return (false, "UserId cannot be null");
+            if (role == "Author") {
+                var author = new Author {
+                    FirstName = firstName,
+                    LastName = lastName,
+                    UserId = user.UserId
+                };
+                context.Authors.Add(author);
             }
-
-            var author = new Author {
-                FirstName = model.FirstName,
-                LastName = model.LastName,
-                UserId = (int)result.userId
-            };
-
-            context.Authors.Add(author);
-            var user = await context.Users.FindAsync(result.userId);
-            if (user != null) {
-                user.Role = "Author";
-            }
+            
             await context.SaveChangesAsync();
             await transaction.CommitAsync();
             
-            return (true, "Author created successfully.");
+            return (true, $"{role} created successfully.");
         }
+        
         catch (Exception ex) {
             await transaction.RollbackAsync();
-            return (false, $"Failed to register author: {ex.Message}");
+            return (false, ex.Message);
         }
         
     }
 
-    public async Task<(bool Succeeded, AuthResponseDto? Response, string Message)> LoginAsync(LoginDto model)
+
+    public async Task<(bool Succeeded, AuthResponseDto? Response, string Message)> LoginAsync(LoginDto model, string? role = null)
     {
         var user = await context.Users.FirstOrDefaultAsync(u => u.Username == model.Username);
         if (user == null || !VerifyPasswordHash(model.Password, user.PasswordHash, user.PasswordSalt))
         {
             return (false, null, "Invalid username or password");
+        }
+
+        if (user is not null && role is not null && user.Role != role) {
+            return (false, null, "Cannot log in : No permissions.");
         }
         
         // Tokens

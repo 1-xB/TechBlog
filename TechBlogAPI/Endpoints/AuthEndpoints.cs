@@ -16,7 +16,7 @@ public static class AuthEndpoints
             if (string.IsNullOrWhiteSpace(model.Username) || string.IsNullOrWhiteSpace(model.Email) || string.IsNullOrWhiteSpace(model.Password)) {
                 return Results.BadRequest(new { message = "All fields are required." });
             }
-            var result = await auth.RegisterAsync(model);
+            var result = await auth.RegisterAsync(model, "User");
             if (!result.Succeeded)
             {
                 return Results.BadRequest(new {message = result.Message});
@@ -31,8 +31,25 @@ public static class AuthEndpoints
             {
                 return Results.BadRequest(new { message = "All fields are required." });
             }
+            RegisterDto registerDto = new() {
+                Username = model.Username,
+                Email = model.Email,
+                Password = model.Password
+            };
+            var result = await auth.RegisterAsync(registerDto, "Author", model.FirstName, model.LastName);
+            if (!result.Succeeded)
+            {
+                return Results.BadRequest(new {message = result.Message});
+            }
 
-            var result = await auth.RegisterAuthorAsync(model);
+            return Results.Ok(new {message = result.Message});
+        });
+
+        group.MapPost("register-admin", [Authorize(Policy = "AdminOnly")] async (IAuthService auth, RegisterDto model) => {
+            if (string.IsNullOrWhiteSpace(model.Username) || string.IsNullOrWhiteSpace(model.Email) || string.IsNullOrWhiteSpace(model.Password)) {
+                return Results.BadRequest(new { message = "All fields are required." });
+            }
+            var result = await auth.RegisterAsync(model, "Admin");
             if (!result.Succeeded)
             {
                 return Results.BadRequest(new {message = result.Message});
@@ -44,6 +61,18 @@ public static class AuthEndpoints
         group.MapPost("/login", async (IAuthService auth, LoginDto model) =>
         {
             var result = await auth.LoginAsync(model);
+            if (!result.Succeeded)
+            {
+                return Results.BadRequest(new {message = result.Message});
+            }
+
+            return Results.Ok(result.Response);
+            
+        });
+
+        group.MapPost("/login-admin", async (IAuthService auth, LoginDto model) =>
+        {
+            var result = await auth.LoginAsync(model, "Admin");
             if (!result.Succeeded)
             {
                 return Results.BadRequest(new {message = result.Message});
