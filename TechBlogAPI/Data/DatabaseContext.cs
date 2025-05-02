@@ -23,7 +23,28 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options) : DbCont
                 .WithMany(a => a.Posts) // relation one to many
                 .HasForeignKey(e => e.AuthorId)
                 .OnDelete(DeleteBehavior.Cascade); // When an author is deleted, all their posts are also deleted
-        });
+            entity.HasMany(e => e.Categories)
+                .WithMany(c => c.Posts)
+                .UsingEntity<Dictionary<string, object>>(
+                    "PostCategory",
+                    categoryJoin => categoryJoin.HasOne<Category>()
+                        .WithMany()
+                        .HasForeignKey("CategoryId")
+                        .HasConstraintName("FK_PostCategory_Categories_CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade),
+                    
+                    postJoin => postJoin.HasOne<Post>()
+                        .WithMany()
+                        .HasForeignKey("PostId")
+                        .HasConstraintName("FK_PostCategory_Posts_PostId")
+                        .OnDelete(DeleteBehavior.Cascade),
+
+                    joinConfig => {
+                        joinConfig.HasKey("PostId", "CategoryId");
+                    }
+                    
+                );
+            });
 
         modelBuilder.Entity<Author>(entity =>
         {
@@ -56,6 +77,12 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options) : DbCont
 
             entity.HasIndex(e => e.Username).IsUnique();
             entity.HasIndex(e => e.Email).IsUnique();
+        });
+
+        modelBuilder.Entity<Category>(entity =>{
+            entity.HasKey(e => e.CategoryId);
+            entity.Property(e => e.CategoryId).ValueGeneratedOnAdd().IsRequired();
+            entity.Property(e => e.Name).HasMaxLength(50).IsRequired();
         });
     }
 }

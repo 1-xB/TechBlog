@@ -11,4 +11,5 @@ public class Post
     public DateTime UpdatedAt { get; set; }
     public int AuthorId { get; set; }
     [JsonIgnore] public Author Author { get; set; }
+    public ICollection<Category> Categories { get; set; } = new List<Category>();
 }

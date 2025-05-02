@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TechBlogAPI.Data;
 
@@ -11,9 +12,11 @@ using TechBlogAPI.Data;
 namespace TechBlogAPI.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    partial class DatabaseContextModelSnapshot : ModelSnapshot
+    [Migration("20250502220015_AddCategories")]
+    partial class AddCategories
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -22,19 +25,19 @@ namespace TechBlogAPI.Migrations
 
             MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
 
-            modelBuilder.Entity("PostCategory", b =>
+            modelBuilder.Entity("CategoryPost", b =>
                 {
-                    b.Property<int>("PostId")
+                    b.Property<int>("CategoriesCategoryId")
                         .HasColumnType("int");
 
-                    b.Property<int>("CategoryId")
+                    b.Property<int>("PostsPostId")
                         .HasColumnType("int");
 
-                    b.HasKey("PostId", "CategoryId");
+                    b.HasKey("CategoriesCategoryId", "PostsPostId");
 
-                    b.HasIndex("CategoryId");
+                    b.HasIndex("PostsPostId");
 
-                    b.ToTable("PostCategory");
+                    b.ToTable("CategoryPost");
                 });
 
             modelBuilder.Entity("TechBlogAPI.Entity.Author", b =>
@@ -168,21 +171,19 @@ namespace TechBlogAPI.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("PostCategory", b =>
+            modelBuilder.Entity("CategoryPost", b =>
                 {
                     b.HasOne("TechBlogAPI.Entity.Category", null)
                         .WithMany()
-                        .HasForeignKey("CategoryId")
+                        .HasForeignKey("CategoriesCategoryId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("FK_PostCategory_Categories_CategoryId");
+                        .IsRequired();
 
                     b.HasOne("TechBlogAPI.Entity.Post", null)
                         .WithMany()
-                        .HasForeignKey("PostId")
+                        .HasForeignKey("PostsPostId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("FK_PostCategory_Posts_PostId");
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("TechBlogAPI.Entity.Author", b =>
