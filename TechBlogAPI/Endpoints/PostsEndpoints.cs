@@ -16,6 +16,7 @@ public static class PostsEndpoints
         group.MapGet("/", async (DatabaseContext dbContext) =>
         {
             try {
+                //Todo : Add CATEGORIES!
                 var posts = await dbContext.Posts
                 .Select(post => new 
                 {
@@ -29,7 +30,12 @@ public static class PostsEndpoints
                         post.Author.AuthorId,
                         post.Author.FirstName,
                         post.Author.LastName
-                    }
+                    },
+                    Categories = post.Categories.Select(c => new 
+                    {
+                        c.CategoryId,
+                        c.Name
+                    }).ToList()
                 })
                 .ToListAsync();
 
@@ -56,7 +62,12 @@ public static class PostsEndpoints
                         post.Author.AuthorId,
                         post.Author.FirstName,
                         post.Author.LastName
-                    }
+                    },
+                    Categories = post.Categories.Select(c => new 
+                    {
+                        c.CategoryId,
+                        c.Name
+                    }).ToList()
                 }).FirstOrDefaultAsync();
                 return post is null ? Results.NotFound() : Results.Ok(post);
             }
@@ -92,6 +103,21 @@ public static class PostsEndpoints
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow,
                 };
+                if (newPost.CategoryIds is not null && newPost.CategoryIds.Any()) {
+                    foreach (int ID in newPost.CategoryIds)
+                    {
+                        var category = await dbContext.Categories.FirstOrDefaultAsync(c => c.CategoryId == ID);
+                        if (category is not null) {
+                            post.Categories.Add(category);
+                        }
+                        else {
+                            return Results.BadRequest("No valid categories were found.");
+                        }
+                    }
+                }
+                else {
+                    return Results.BadRequest("A post must have at least one category.");
+                }
                 await dbContext.Posts.AddAsync(post);
                 await dbContext.SaveChangesAsync();
                 return Results.Created($"/api/posts/{post.PostId}", new {
@@ -145,7 +171,9 @@ public static class PostsEndpoints
                     return Results.BadRequest(new {message = "Title cannot exceed 100 characters"});
                 }
 
-                var post = await dbContext.Posts.FirstOrDefaultAsync(p => p.PostId == id);
+                var post = await dbContext.Posts
+                    .Include(p => p.Categories)
+                    .FirstOrDefaultAsync(p => p.PostId == id);
                 if (post is null) {
                     return Results.NotFound($"Post with id {id} does not exist.");
                 }
@@ -161,6 +189,23 @@ public static class PostsEndpoints
                 post.Title = newPost.Title;
                 post.Content = newPost.Content;
                 post.UpdatedAt = DateTime.UtcNow;
+
+                if (newPost.CategoryIds is not null && newPost.CategoryIds.Any()) {
+                    post.Categories.Clear();
+                    foreach (int ID in newPost.CategoryIds)
+                    {
+                        var category = await dbContext.Categories.FirstOrDefaultAsync(c => c.CategoryId == ID);
+                        if (category is not null) {
+                            post.Categories.Add(category);
+                        }
+                        else {
+                            return Results.BadRequest("No valid categories were found.");
+                        }
+                    }
+                }
+                else {
+                    return Results.BadRequest("A post must have at least one category.");
+                }
 
                 await dbContext.SaveChangesAsync();
                 return Results.Ok(new { message = $"Post with id {id} was successfully updated" });
