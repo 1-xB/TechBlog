@@ -16,7 +16,6 @@ public static class PostsEndpoints
         group.MapGet("/", async (DatabaseContext dbContext) =>
         {
             try {
-                //Todo : Add CATEGORIES!
                 var posts = await dbContext.Posts
                 .Select(post => new 
                 {

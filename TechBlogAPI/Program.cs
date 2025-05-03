@@ -94,6 +94,7 @@ public class Program
         // Routes
         app.MapPostRoutes();
         app.MapAuthRoutes();
+        app.MapCategoriesRoutes();
         
         app.UseHttpsRedirection();
 
