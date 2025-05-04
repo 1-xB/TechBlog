@@ -46,12 +46,10 @@ public class AuthService(DatabaseContext context, IOptions<JwtSettings> jwtSetti
             context.Users.Add(user);
 
             if (role == "Author") {
-                var author = new Author {
-                    FirstName = firstName,
-                    LastName = lastName,
-                    UserId = user.UserId
+                user.Author = new Author {
+                FirstName = firstName,
+                LastName = lastName
                 };
-                context.Authors.Add(author);
             }
             
             await context.SaveChangesAsync();
