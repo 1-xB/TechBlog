@@ -1,0 +1,44 @@
+<div class="admin-header">
+    <div class="admin-header-content">
+        <h2>Admin Panel</h2>
+        <div class="admin-profile">
+            <span>@Username</span>
+            <a class="btn btn-outline-light btn-sm" @onclick="OnLogout">Logout</a>
+        </div>
+    </div>
+</div>
+
+<style>
+    .admin-header {
+        background-color: #000;
+        color: #fff;
+        padding: 10px 20px;
+    }
+    
+    .admin-header-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .admin-profile span {
+        margin-right: 10px;
+    }
+
+    .btn-outline-light {
+        border-color: #fff;
+        color: #fff;
+    }
+    .btn-outline-light:hover {
+        background-color: #fff;
+        color: #000;
+    }
+</style>
+
+@code {
+    [Parameter] 
+    public string Username { get; set; } = "Administrator";
+
+    [Parameter]
+    public EventCallback OnLogout { get; set; }
+}

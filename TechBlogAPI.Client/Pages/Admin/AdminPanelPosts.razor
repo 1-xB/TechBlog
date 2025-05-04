@@ -1,10 +1,11 @@
-@page "/admin/panel"
+@page "/admin/posts"
 @using Microsoft.AspNetCore.Components.Authorization
 @using TechBlogAPI.Client.Auth
 @using TechBlogAPI.Client.Pages.Admin.Compoments
 @inject AuthenticationStateProvider AuthStateProvider
 @inject NavigationManager NavigationManager
 @inject AuthService AuthService
+
 
 
 <AdminHeader Username="@Username" OnLogout="OnClickLogout" />
@@ -14,7 +15,7 @@
         <ul>
             <li><a href="/admin/users">Users</a></li>
             <li><a href="/admin/authors">Authors</a></li>
-            <li><a href="/admin/posts">Posts</a></li>
+            <li style="background-color: #2e2e2e" ><a href="/admin/posts">Posts</a></li>
         </ul>
     </nav>
     <div class="content">

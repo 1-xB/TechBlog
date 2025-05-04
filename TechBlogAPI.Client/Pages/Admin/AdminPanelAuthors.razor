@@ -1,4 +1,4 @@
-@page "/admin/panel"
+@page "/admin/authors"
 @using Microsoft.AspNetCore.Components.Authorization
 @using TechBlogAPI.Client.Auth
 @using TechBlogAPI.Client.Pages.Admin.Compoments
@@ -7,13 +7,14 @@
 @inject AuthService AuthService
 
 
+
 <AdminHeader Username="@Username" OnLogout="OnClickLogout" />
 
 <div class="admin-container">
     <nav class="sidebar">
         <ul>
             <li><a href="/admin/users">Users</a></li>
-            <li><a href="/admin/authors">Authors</a></li>
+            <li style="background-color: #2e2e2e"><a href="/admin/authors">Authors</a></li>
             <li><a href="/admin/posts">Posts</a></li>
         </ul>
     </nav>
