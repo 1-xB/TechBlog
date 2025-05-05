@@ -82,6 +82,18 @@ public static class AuthEndpoints
             
         });
 
+        group.MapPost("/login-author", async (IAuthService auth, LoginDto model) =>
+        {
+            var result = await auth.LoginAsync(model, "Author");
+            if (!result.Succeeded)
+            {
+                return Results.BadRequest(new {message = result.Message});
+            }
+
+            return Results.Ok(result.Response);
+            
+        });
+
         group.MapPost("/refresh-token", async (IAuthService auth, RefreshTokenDto model) =>
         {
             var result = await auth.RefreshTokenAsync(model.RefreshToken);

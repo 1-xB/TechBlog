@@ -37,6 +37,35 @@ namespace TechBlogAPI.Client.Auth
             }
         }
 
+        public async Task<bool> LoginAuthorAsync(string username, string password)
+        {
+            try
+            {
+                LoginModel loginModel = new()
+                {
+                    Username = username,
+                    Password = password
+                };
+
+                var response = await httpClient.PostAsJsonAsync("/api/auth/login-author", loginModel);
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
+                    if (result is null) return false;
+                    await SaveTokensAsync(result);
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
         public async Task<bool> RefreshTokenAsync()
         {
             try
