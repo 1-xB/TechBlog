@@ -129,7 +129,12 @@ public static class PostsEndpoints
                         post.Author.AuthorId,
                         post.Author.FirstName,
                         post.Author.LastName
-                    }
+                    },
+                    Categories = post.Categories.Select(c => new 
+                    {
+                    c.CategoryId,
+                    c.Name
+                }).ToList()
                 });
             }
             catch (Exception ex) {

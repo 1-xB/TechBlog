@@ -1,10 +1,14 @@
 @page "/admin/posts"
 @using Microsoft.AspNetCore.Components.Authorization
 @using TechBlogAPI.Client.Auth
+@using TechBlogAPI.Client.Models
 @using TechBlogAPI.Client.Pages.Admin.Compoments
+@using TechBlogAPI.Client.Services
 @inject AuthenticationStateProvider AuthStateProvider
 @inject NavigationManager NavigationManager
 @inject AuthService AuthService
+@inject HttpClient http
+@inject IPostService PostService
 
 
 
@@ -20,7 +24,48 @@
     </nav>
     <div class="content">
         
-        <h1>Hello @Username!</h1>
+        <h1>All posts:</h1>
+        @if (!string.IsNullOrEmpty(ErrorMessage)) {
+            <div class="alert alert-danger" role="alert">
+                @ErrorMessage
+            </div>
+        }
+        @if (!string.IsNullOrEmpty(Message)) {
+            <div class="alert alert-warning text-center" role="alert">
+                @Message
+            </div>
+        }
+        else {
+            @if (Posts != null && Posts.Any()) {
+                @foreach (var post in Posts) {
+                    <div class="card mb-3 shadow" style="background-color: #2d2d2d; border: none;">
+                        <div class="card-header" style="background-color: #1e1e1e; border-bottom: 1px solid #444;">
+                            <h3 class="card-title" style="color: #fff;">@post.Title</h3>
+                        </div>
+                        <div class="card-body" style="background-color: #2d2d2d;">
+                            <p class="card-text" style="color: #ccc;">@post.Content</p>
+                            <p class="card-text">
+                                <small style="color: #aaa;">
+                                    Written by @post.Author.FirstName @post.Author.LastName on @post.CreatedAt.ToString("dd/MM/yyyy HH:mm")
+                                </small>
+                            </p>
+                        </div>
+                        <div class="card-footer" style="background-color: #1e1e1e; border-top: 1px solid #444; color: #aaa;">
+                            @if (post.Categories != null && post.Categories.Any()) {
+                                <div>
+                                    Categories:
+                                    @foreach (var category in post.Categories) {
+                                        <span class="badge me-1" style="background-color: #444; color: #fff;">@category.Name</span>
+                                    }
+                                </div>
+                            }
+                            <button class="btn btn-danger" @onclick="() => DeletePost(post.PostId)">Delete</button>
+                        </div>
+                    </div>
+                }
+            }
+        }
+        
 
     </div>
 </div>
@@ -71,6 +116,7 @@
     .btn-outline-light {
         border-color: #fff;
         color: #fff;
+    using TechBlogAPI.Client.Models;
     }
     .btn-outline-light:hover {
         background-color: #fff;
@@ -80,17 +126,41 @@
 
 @code {
     private string Username;
+    private string Message;
+    private string ErrorMessage;
+    private bool IsLoading;
+    private List<PostModel>? Posts;
+    
     protected override async Task OnInitializedAsync()
     {
+        IsLoading = true;
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
         if (!authState.User.Identity?.IsAuthenticated == true && !authState.User.IsInRole("Admin")) {
             NavigationManager.NavigateTo("/admin");
         }
         Username = authState.User.Identity?.Name ?? "Administrator";
-    }
 
+        Posts = await PostService.GetAllPostsAsync();
+        if (Posts is null)
+        {
+            Message = "Something went wrong. Try again later";
+        }
+        IsLoading = false;
+    }
+    
     private async Task OnClickLogout() {
         await AuthService.LogoutAsync();
         NavigationManager.NavigateTo("/admin");
+    }
+
+    private async Task DeletePost(int postId)
+    {
+        var result = await PostService.DeletePostAsync(postId);
+        if (!result.Success) {
+            ErrorMessage = result.ErrorMessage;
+        }
+        else {
+            NavigationManager.Refresh();
+        }
     }
 }

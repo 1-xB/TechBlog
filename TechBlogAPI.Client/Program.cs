@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.Logging;
 using TechBlogAPI.Client.Auth;
+using TechBlogAPI.Client.Services;
 
 namespace TechBlogAPI.Client;
 
@@ -19,7 +20,9 @@ public class Program
 
         // HttpClient Configuration
         builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://localhost:5208") });
-
+        
+        builder.Services.AddScoped<IPostService, PostService>();
+        
         // Rejestracja serwisów autentykacji - fix the dependency order
         builder.Services.AddScoped<AuthService>();
         builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
