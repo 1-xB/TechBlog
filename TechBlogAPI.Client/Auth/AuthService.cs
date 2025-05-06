@@ -77,7 +77,7 @@ namespace TechBlogAPI.Client.Auth
                 }
 
                 var refreshTokenRequest = new RefreshTokenRequest { RefreshToken = refreshToken };
-                var response = await httpClient.PostAsJsonAsync("auth/refresh-token", refreshTokenRequest);
+                var response = await httpClient.PostAsJsonAsync("api/auth/refresh-token", refreshTokenRequest);
                 if (response.IsSuccessStatusCode)
                 {
                     var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
@@ -101,7 +101,7 @@ namespace TechBlogAPI.Client.Auth
 
                 if (!string.IsNullOrEmpty(accessToken))
                 {
-                    using var requestMessage = new HttpRequestMessage(HttpMethod.Post, "auth/revoke-token");
+                    using var requestMessage = new HttpRequestMessage(HttpMethod.Post, "api/auth/revoke-token");
                     requestMessage.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
 
                     await httpClient.SendAsync(requestMessage);

@@ -68,7 +68,7 @@ public class AuthService(DatabaseContext context, IOptions<JwtSettings> jwtSetti
 
     public async Task<(bool Succeeded, AuthResponseDto? Response, string Message)> LoginAsync(LoginDto model, string? role = null)
     {
-        var user = await context.Users.FirstOrDefaultAsync(u => u.Username == model.Username);
+        var user = await context.Users.Include(u => u.Author).FirstOrDefaultAsync(u => u.Username == model.Username);
         if (user == null || !VerifyPasswordHash(model.Password, user.PasswordHash, user.PasswordSalt))
         {
             return (false, null, "Invalid username or password");
@@ -179,6 +179,8 @@ public class AuthService(DatabaseContext context, IOptions<JwtSettings> jwtSetti
             new Claim(ClaimTypes.Name, user.Username),
             new Claim(ClaimTypes.Email, user.Email),
             new Claim(ClaimTypes.Role, user.Role),
+            new Claim(ClaimTypes.GivenName, user.Author?.FirstName ?? string.Empty),
+            new Claim(ClaimTypes.Surname, user.Author?.LastName ?? string.Empty),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
 
