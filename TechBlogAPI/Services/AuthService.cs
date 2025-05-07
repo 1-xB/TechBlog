@@ -181,6 +181,7 @@ public class AuthService(DatabaseContext context, IOptions<JwtSettings> jwtSetti
             new Claim(ClaimTypes.Role, user.Role),
             new Claim(ClaimTypes.GivenName, user.Author?.FirstName ?? string.Empty),
             new Claim(ClaimTypes.Surname, user.Author?.LastName ?? string.Empty),
+            new Claim("AuthorId", user.Author?.AuthorId.ToString() ?? string.Empty),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
 

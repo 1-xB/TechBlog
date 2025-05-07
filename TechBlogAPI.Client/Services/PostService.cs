@@ -17,6 +17,15 @@ public class PostService(HttpClient http, AuthService authService) : IPostServic
         return null;
     }
 
+    public async Task<List<PostModel>?> GetAuthorPostsAsync(int authorId)
+    {
+        var response = await http.GetAsync($"api/posts/author-posts/{authorId}");
+        if (response.IsSuccessStatusCode) {
+            return await response.Content.ReadFromJsonAsync<List<PostModel>>();
+        }
+        return null;
+    }
+
     public async Task<(bool Success, string? ErrorMessage)> DeletePostAsync(int id)
     {
         var accessToken = await authService.GetAccessTokenAsync();

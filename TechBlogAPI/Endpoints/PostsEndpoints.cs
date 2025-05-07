@@ -75,6 +75,35 @@ public static class PostsEndpoints
             }
             
         });
+
+        group.MapGet("/author-posts/{authorId:int}", async (int authorId, DatabaseContext dbContext) =>
+        {
+            var author = await dbContext.Authors.Include(a => a.Posts).ThenInclude(post => post.Categories)
+                .FirstOrDefaultAsync(a => a.AuthorId == authorId);
+            if (author is null)
+            {
+                return Results.NotFound($"Author with id {authorId} does not exist.");
+            }
+            return Results.Ok(author.Posts.Select(post => new
+            {
+                post.PostId,
+                post.Title,
+                post.Content,
+                post.CreatedAt,
+                post.UpdatedAt,
+                Author = new
+                {
+                    post.Author.AuthorId,
+                    post.Author.FirstName,
+                    post.Author.LastName
+                },
+                Categories = post.Categories.Select(c => new 
+                {
+                    c.CategoryId,
+                    c.Name
+                }).ToList()
+            }).ToList());
+        });
         
         group.MapPost("/", [Authorize(Policy = "AuthorOnly")] async (DatabaseContext dbContext, AddPostDto newPost, ClaimsPrincipal user) =>
         {
