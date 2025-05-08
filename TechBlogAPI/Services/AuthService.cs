@@ -103,10 +103,24 @@ public class AuthService(DatabaseContext context, IOptions<JwtSettings> jwtSetti
             return (false, null, "Invalid refresh token.");
         }
 
-        var user = await context.Users.FirstOrDefaultAsync(u => u.RefreshToken == refreshToken);
+        var user = await context.Users.Include(u => u.Author).FirstOrDefaultAsync(u => u.RefreshToken == refreshToken);
         if (user == null)
         {
             return (false, null, "Invalid refresh token.");
+        }
+
+        if (user.Role == "Author" && user.Author == null)
+        {
+            // Re-load the user with explicit Author loading
+            user = await context.Users
+                .Include(u => u.Author)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(u => u.UserId == user.UserId);
+                
+            if (user?.Author == null)
+            {
+                return (false, null, "Author data could not be loaded.");
+            }
         }
 
         if (user.RefreshTokenExpiryDate <= DateTime.UtcNow)

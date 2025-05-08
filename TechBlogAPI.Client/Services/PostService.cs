@@ -8,6 +8,43 @@ namespace TechBlogAPI.Client.Services;
 
 public class PostService(HttpClient http, AuthService authService) : IPostService
 {
+    public async Task<(bool Success, string? Message)> PublishPostAsync(PublishPostRequest newPost)
+    {
+        var accessToken = await authService.GetAccessTokenAsync();
+        if (string.IsNullOrEmpty(accessToken))
+        {
+            await authService.LogoutAsync();
+            return (false, "Access token is null");
+        }
+
+        try
+        {
+            using var request = new HttpRequestMessage(HttpMethod.Post, $"api/posts/");
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+            request.Content = JsonContent.Create(newPost);
+            
+            var response = await http.SendAsync(request);
+            switch (response.StatusCode)
+            {
+                case HttpStatusCode.Created:
+                    return (true, null);
+                case HttpStatusCode.Forbidden:
+                    await authService.LogoutAsync();
+                    return (false, "You have no permissions to create posts.");
+                case HttpStatusCode.NotFound:
+                    await authService.LogoutAsync();
+                    return (false, "Something went wrong with your account. Try log in again.");
+                case HttpStatusCode.BadRequest:
+                    return (false, $"Error : {response.Content}");
+            }
+            return (false, "Something went wrong. Try again later");
+        }
+        catch (Exception ex)
+        {
+            return (false, $"Exception : {ex.Message}");
+        }
+    }
+
     public async Task<List<PostModel>?> GetAllPostsAsync()
     {
         var response = await http.GetAsync("api/posts");

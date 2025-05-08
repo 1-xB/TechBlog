@@ -6,6 +6,7 @@ using TechBlogAPI.Data;
 using TechBlogAPI.Endpoints;
 using TechBlogAPI.Settings;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.FileProviders;
 using TechBlogAPI.Services;
 
 namespace TechBlogAPI;
@@ -73,6 +74,8 @@ public class Program
         // Add services to the container.
         builder.Services.AddAuthorization();
 
+        builder.Services.AddAntiforgery();
+
         // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
         builder.Services.AddOpenApi();
 
@@ -89,17 +92,31 @@ public class Program
             app.MapOpenApi();
             app.MapScalarApiReference();
         }
-        app.UseCors("AllowAll");
+
+        app.UseCors(builder => builder
+            .AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowAnyHeader());
         
         // Routes
         app.MapPostRoutes();
         app.MapAuthRoutes();
         app.MapCategoriesRoutes();
+        app.MapImagesEndpoints();
         
         app.UseHttpsRedirection();
 
         app.UseAuthentication();
         app.UseAuthorization();
+
+        app.UseStaticFiles(new StaticFileOptions
+        {
+            FileProvider = new PhysicalFileProvider(
+                Path.Combine(Directory.GetCurrentDirectory(), "images")),
+            RequestPath = "/images"
+        });
+        
+        app.UseAntiforgery();
         
         app.Run();
     }
