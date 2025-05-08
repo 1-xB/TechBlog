@@ -114,7 +114,6 @@ public class AuthService(DatabaseContext context, IOptions<JwtSettings> jwtSetti
             // Re-load the user with explicit Author loading
             user = await context.Users
                 .Include(u => u.Author)
-                .AsNoTracking()
                 .FirstOrDefaultAsync(u => u.UserId == user.UserId);
                 
             if (user?.Author == null)

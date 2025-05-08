@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using Microsoft.JSInterop;
@@ -77,7 +78,7 @@ namespace TechBlogAPI.Client.Auth
                 }
 
                 var refreshTokenRequest = new RefreshTokenRequest { RefreshToken = refreshToken };
-                var response = await httpClient.PostAsJsonAsync("api/auth/refresh-token", refreshTokenRequest);
+                var response = await httpClient.PostAsJsonAsync("/api/auth/refresh-token", refreshTokenRequest);
                 if (response.IsSuccessStatusCode)
                 {
                     var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
@@ -129,7 +130,9 @@ namespace TechBlogAPI.Client.Auth
                 return null;
             }
 
-            if (DateTime.TryParse(expirationStr, out var expiration))
+            if (DateTime.TryParseExact(expirationStr, "o", CultureInfo.InvariantCulture,
+            DateTimeStyles.AdjustToUniversal | DateTimeStyles.AssumeUniversal,
+            out var expiration))
             {
                 if (expiration <= DateTime.UtcNow.AddMinutes(1))
                 {
