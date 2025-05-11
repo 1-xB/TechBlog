@@ -8,10 +8,7 @@ public class CategoryService(HttpClient httpClient) : ICategoryService
     public async Task<List<Category>?> GetAllCategoriesAsync()
     {
         var response = await httpClient.GetAsync("api/category");
-        if (response.IsSuccessStatusCode)
-        {
-            return await response.Content.ReadFromJsonAsync<List<Category>>();
-        }
+        if (response.IsSuccessStatusCode) return await response.Content.ReadFromJsonAsync<List<Category>>();
         return null;
     }
 }

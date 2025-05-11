@@ -11,7 +11,7 @@
 @inject IPostService PostService
 
 
-<AuthorHeader  Username="@Username" OnLogout="OnClickLogout"></AuthorHeader>
+<AuthorHeader Username="@Username" OnLogout="OnClickLogout"></AuthorHeader>
 
 <div class="admin-container">
     <nav class="sidebar">
@@ -21,9 +21,10 @@
         </ul>
     </nav>
     <div class="content">
-        
+
         <h1>Your posts:</h1>
-        @if (!string.IsNullOrEmpty(ErrorMessage)) {
+        @if (!string.IsNullOrEmpty(ErrorMessage))
+        {
             <div class="alert alert-danger" role="alert">
                 @ErrorMessage
             </div>
@@ -41,14 +42,16 @@
                             <small style="color: #aaa;">Written on @post.CreatedAt.ToString("dd/MM/yyyy HH:mm")</small>
                         </p>
                     </div>
-                    <div class="card-footer" style="background-color: #1e1e1e; border-top: 1px solid #444; color: #aaa;">
+                    <div class="card-footer"
+                         style="background-color: #1e1e1e; border-top: 1px solid #444; color: #aaa;">
                         @if (post.Categories != null && post.Categories.Any())
                         {
                             <div>
                                 Categories:
                                 @foreach (var category in post.Categories)
                                 {
-                                    <span class="badge me-1" style="background-color: #444; color: #fff;">@category.Name</span>
+                                    <span class="badge me-1"
+                                          style="background-color: #444; color: #fff;">@category.Name</span>
                                 }
                             </div>
                         }
@@ -97,6 +100,7 @@
         color: #fff;
         font-weight: bold;
     }
+
     .sidebar li:hover {
         background-color: #2e2e2e;
         cursor: pointer;
@@ -112,6 +116,7 @@
         border-color: #fff;
         color: #fff;
     }
+
     .btn-outline-light:hover {
         background-color: #fff;
         color: #000;
@@ -122,16 +127,18 @@
     private string? Username;
     private List<PostModel?> authorPosts;
     private string ErrorMessage;
+
     protected override async Task OnInitializedAsync()
     {
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
-        if (!authState.User.Identity?.IsAuthenticated == true && !authState.User.IsInRole("Author")) {
+        if (!authState.User.Identity?.IsAuthenticated == true && !authState.User.IsInRole("Author"))
+        {
             NavigationManager.NavigateTo("/author");
         }
 
         Username = authState.User.Identity?.Name;
-        
-        
+
+
         var authorIdClaim = authState.User.FindFirst("AuthorId");
         if (authorIdClaim is not null && int.TryParse(authorIdClaim.Value, out var authorId))
         {
@@ -142,10 +149,10 @@
             await AuthService.LogoutAsync();
             NavigationManager.NavigateTo("/author");
         }
-        
     }
 
-    private async Task OnClickLogout() {
+    private async Task OnClickLogout()
+    {
         await AuthService.LogoutAsync();
         NavigationManager.NavigateTo("/author");
     }
@@ -153,11 +160,14 @@
     private async Task DeletePost(int postId)
     {
         var result = await PostService.DeletePostAsync(postId);
-        if (!result.Success) {
+        if (!result.Success)
+        {
             ErrorMessage = result.ErrorMessage;
         }
-        else {
+        else
+        {
             NavigationManager.Refresh();
         }
     }
+
 }

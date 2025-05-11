@@ -33,19 +33,14 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options) : DbCont
                         .HasForeignKey("CategoryId")
                         .HasConstraintName("FK_PostCategory_Categories_CategoryId")
                         .OnDelete(DeleteBehavior.Cascade),
-                    
                     postJoin => postJoin.HasOne<Post>()
                         .WithMany()
                         .HasForeignKey("PostId")
                         .HasConstraintName("FK_PostCategory_Posts_PostId")
                         .OnDelete(DeleteBehavior.Cascade),
-
-                    joinConfig => {
-                        joinConfig.HasKey("PostId", "CategoryId");
-                    }
-                    
+                    joinConfig => { joinConfig.HasKey("PostId", "CategoryId"); }
                 );
-            });
+        });
 
         modelBuilder.Entity<Author>(entity =>
         {
@@ -54,8 +49,7 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options) : DbCont
             entity.Property(e => e.FirstName).IsRequired().HasMaxLength(50);
             entity.Property(e => e.LastName).IsRequired().HasMaxLength(50);
             entity.HasOne(e => e.User)
-                .WithOne(u => u.Author).
-                HasForeignKey<Author>(e => e.UserId);
+                .WithOne(u => u.Author).HasForeignKey<Author>(e => e.UserId);
         });
 
         modelBuilder.Entity<User>(entity =>
@@ -70,7 +64,7 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options) : DbCont
 
             entity.Property(e => e.RefreshToken).HasMaxLength(255);
             entity.Property(e => e.RefreshTokenExpiryDate).IsRequired();
-            
+
             entity.HasOne(e => e.Author)
                 .WithOne(a => a.User)
                 .HasForeignKey<Author>(a => a.UserId)
@@ -80,7 +74,8 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options) : DbCont
             entity.HasIndex(e => e.Email).IsUnique();
         });
 
-        modelBuilder.Entity<Category>(entity =>{
+        modelBuilder.Entity<Category>(entity =>
+        {
             entity.HasKey(e => e.CategoryId);
             entity.Property(e => e.CategoryId).ValueGeneratedOnAdd().IsRequired();
             entity.Property(e => e.Name).HasMaxLength(50).IsRequired();

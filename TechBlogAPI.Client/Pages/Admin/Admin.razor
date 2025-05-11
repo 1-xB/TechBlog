@@ -9,31 +9,31 @@
 <div class="admin-login-container">
     <div class="login-card">
         <h1 class="text-center mb-4">Admin Login</h1>
-        
+
         <EditForm FormName="LoginForm" Model="@loginModel" OnValidSubmit="OnValidSubmitAsync" Enhance>
             <DataAnnotationsValidator/>
-            <ValidationSummary class="text-danger mb-3" />
+            <ValidationSummary class="text-danger mb-3"/>
 
             <div class="mb-4">
                 <label for="username" class="form-label">Username</label>
                 <div class="input-group">
                     <span class="input-group-text"><i class="bi bi-person-fill"></i></span>
-                    <InputText class="form-control" id="username" @bind-Value="@loginModel.Username" 
-                               autocomplete="username" placeholder="Enter your username" />
+                    <InputText class="form-control" id="username" @bind-Value="@loginModel.Username"
+                               autocomplete="username" placeholder="Enter your username"/>
                 </div>
-                <ValidationMessage For="@(() => loginModel.Username)" class="text-danger" />
+                <ValidationMessage For="@(() => loginModel.Username)" class="text-danger"/>
             </div>
 
             <div class="mb-4">
                 <label for="password" class="form-label">Password</label>
                 <div class="input-group">
                     <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
-                    <InputText type="password" class="form-control" id="password" @bind-Value="@loginModel.Password" 
-                               autocomplete="current-password" placeholder="Enter your password" />
+                    <InputText type="password" class="form-control" id="password" @bind-Value="@loginModel.Password"
+                               autocomplete="current-password" placeholder="Enter your password"/>
                 </div>
-                <ValidationMessage For="@(() => loginModel.Password)" class="text-danger" />
+                <ValidationMessage For="@(() => loginModel.Password)" class="text-danger"/>
             </div>
-            
+
             <div class="d-grid gap-2">
                 <button type="submit" class="btn btn-primary btn-lg" aria-label="Login">
                     <i class="bi bi-box-arrow-in-right me-2"></i> Login
@@ -41,7 +41,7 @@
             </div>
             <p class="text-danger">@LoginMessage</p>
         </EditForm>
-        
+
     </div>
 </div>
 
@@ -52,6 +52,7 @@
         margin: 0;
         padding: 0;
     }
+
     .admin-login-container {
         display: flex;
         justify-content: center;
@@ -60,7 +61,7 @@
         background-color: #121212;
         padding: 1rem;
     }
-    
+
     .login-card {
         background-color: #1f1f1f;
         border-radius: 8px;
@@ -70,27 +71,27 @@
         max-width: 450px;
         color: #fff;
     }
-    
+
     .input-group-text {
         background-color: #343a40;
         color: #fff;
     }
-    
+
     label.form-label {
         color: #fff;
     }
-    
+
     /* Override default Bootstrap input and card styles for dark mode */
     .form-control {
         background-color: #343a40;
         color: #fff;
         border: 1px solid #495057;
     }
-    
+
     .form-control::placeholder {
         color: #adb5bd;
     }
-    
+
     .form-control:focus {
         background-color: #343a40 !important;
         color: #fff;
@@ -107,11 +108,14 @@
     protected override async Task OnInitializedAsync()
     {
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
-        if (authState.User.Identity?.IsAuthenticated == true && authState.User.IsInRole("Admin")) {
+        if (authState.User.Identity?.IsAuthenticated == true && authState.User.IsInRole("Admin"))
+        {
             NavigationManager.NavigateTo("/admin/panel");
         }
     }
-    private async Task OnValidSubmitAsync() {
+
+    private async Task OnValidSubmitAsync()
+    {
         try
         {
             var result = await AuthService.LoginAsync(loginModel.Username, loginModel.Password);
@@ -130,4 +134,5 @@
             LoginMessage = "Something went wrong! Try again later!";
         }
     }
+
 }

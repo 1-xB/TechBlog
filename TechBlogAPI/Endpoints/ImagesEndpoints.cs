@@ -14,21 +14,12 @@ public static class ImagesEndpoints
         {
             try
             {
-                if (file == null)
-                {
-                    return Results.BadRequest("File is null");
-                }
+                if (file == null) return Results.BadRequest("File is null");
 
-                if (file.Length == 0)
-                {
-                    return Results.BadRequest("File length is 0");
-                }
+                if (file.Length == 0) return Results.BadRequest("File length is 0");
 
                 var uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "images");
-                if (!Directory.Exists(uploadPath))
-                {
-                    Directory.CreateDirectory(uploadPath);
-                }
+                if (!Directory.Exists(uploadPath)) Directory.CreateDirectory(uploadPath);
 
                 var fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
                 var filePath = Path.Combine(uploadPath, fileName);
@@ -49,7 +40,7 @@ public static class ImagesEndpoints
                 return Results.Problem($"Error: {ex.Message}, StackTrace: {ex.StackTrace}");
             }
         }).AllowAnonymous().DisableAntiforgery();
-        
+
         return group;
     }
 }

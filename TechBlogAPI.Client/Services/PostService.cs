@@ -22,7 +22,7 @@ public class PostService(HttpClient http, AuthService authService) : IPostServic
             using var request = new HttpRequestMessage(HttpMethod.Post, $"api/posts/");
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
             request.Content = JsonContent.Create(newPost);
-            
+
             var response = await http.SendAsync(request);
             switch (response.StatusCode)
             {
@@ -37,6 +37,7 @@ public class PostService(HttpClient http, AuthService authService) : IPostServic
                 case HttpStatusCode.BadRequest:
                     return (false, $"Error : {response.Content}");
             }
+
             return (false, "Something went wrong. Try again later");
         }
         catch (Exception ex)
@@ -48,18 +49,14 @@ public class PostService(HttpClient http, AuthService authService) : IPostServic
     public async Task<List<PostModel>?> GetAllPostsAsync()
     {
         var response = await http.GetAsync("api/posts");
-        if (response.IsSuccessStatusCode) {
-            return await response.Content.ReadFromJsonAsync<List<PostModel>>();
-        }
+        if (response.IsSuccessStatusCode) return await response.Content.ReadFromJsonAsync<List<PostModel>>();
         return null;
     }
 
     public async Task<List<PostModel>?> GetAuthorPostsAsync(int authorId)
     {
         var response = await http.GetAsync($"api/posts/author-posts/{authorId}");
-        if (response.IsSuccessStatusCode) {
-            return await response.Content.ReadFromJsonAsync<List<PostModel>>();
-        }
+        if (response.IsSuccessStatusCode) return await response.Content.ReadFromJsonAsync<List<PostModel>>();
         return null;
     }
 
@@ -71,7 +68,9 @@ public class PostService(HttpClient http, AuthService authService) : IPostServic
             await authService.LogoutAsync();
             return (false, "Access token is null");
         }
-        try {
+
+        try
+        {
             using var request = new HttpRequestMessage(HttpMethod.Delete, $"api/posts/{id}");
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
@@ -89,10 +88,9 @@ public class PostService(HttpClient http, AuthService authService) : IPostServic
 
             return (false, "Something went wrong. Try again later");
         }
-        catch (Exception ex) {
+        catch (Exception ex)
+        {
             return (false, $"Exception : {ex.Message}");
         }
-        
-
     }
 }

@@ -13,7 +13,7 @@ window.getQuillHtml = async (apiUrl) => {
             const blob = dataURLToBlob(img.src);
             const formData = new FormData();
             formData.append("file", blob, "image.png");
-            
+
             const accessToken = localStorage.getItem("accessToken")
 
             const uploadUrl = `${apiUrl}/api/images/upload`;
@@ -21,8 +21,8 @@ window.getQuillHtml = async (apiUrl) => {
             try {
                 const response = await fetch(uploadUrl, {
                     method: "POST",
-                    headers : {
-                        'Authorization' : `Bearer ${accessToken}`
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`
                     },
                     body: formData,
                 });
@@ -32,7 +32,7 @@ window.getQuillHtml = async (apiUrl) => {
                     img.src = "";
                     continue;
                 }
-                
+
                 const result = await response.json();
                 img.src = result.url; // { url: "https://..." }
             } catch (error) {
@@ -51,5 +51,5 @@ function dataURLToBlob(dataUrl) {
     const byteString = atob(arr[1]);
     const byteNumbers = Array.from(byteString, char => char.charCodeAt(0));
     const byteArray = new Uint8Array(byteNumbers);
-    return new Blob([byteArray], { type: mime });
+    return new Blob([byteArray], {type: mime});
 }

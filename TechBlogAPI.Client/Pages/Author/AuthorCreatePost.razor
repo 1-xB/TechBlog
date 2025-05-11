@@ -15,7 +15,7 @@
 @inject HttpClient Http
 
 
-<AuthorHeader  Username="@Username" OnLogout="OnClickLogout"></AuthorHeader>
+<AuthorHeader Username="@Username" OnLogout="OnClickLogout"></AuthorHeader>
 
 <div class="admin-container">
     <nav class="sidebar">
@@ -25,31 +25,36 @@
         </ul>
     </nav>
     <div class="content">
-        @if (!string.IsNullOrEmpty(ErrorMessage)) {
+        @if (!string.IsNullOrEmpty(ErrorMessage))
+        {
             <div class="alert alert-danger" role="alert">
                 @ErrorMessage
             </div>
         }
         <EditForm Model="@postModel" OnValidSubmit="PublishPost">
-            <DataAnnotationsValidator />
-    
+            <DataAnnotationsValidator/>
+
             <div class="form-group" style="margin: 20px">
                 <label for="titleInput">Title</label>
-                <InputText id="titleInput" class="form-control" @bind-Value="postModel.Title" />
-                <ValidationMessage For="@(() => postModel.Title)" />
+                <InputText id="titleInput" class="form-control" @bind-Value="postModel.Title"/>
+                <ValidationMessage For="@(() => postModel.Title)"/>
             </div>
-            
+
             <div id="editor-container" style="height: 200px; background: black; color: white;"></div>
-    
+
             <div class="form-group" style="margin: 20px">
                 <label for="categorySelect">Categories</label>
-                <RadzenStack id="categorySelect" Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem" class="rz-p-sm-12">
-                    <RadzenLabel Text="Select Values" Component="DropDownMultipleChips" />
-                    <RadzenDropDown @bind-Value=@postModel.CategoryIds Data=@Categories TextProperty="@nameof(Category.Name)" ValueProperty="@nameof(Category.CategoryId)" Name="DropDownMultipleChips"
-                                    Multiple=true AllowClear=true Placeholder="Select categories" Chips=true Style="width: 100%; max-width: 400px;" />
+                <RadzenStack id="categorySelect" Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center"
+                             Gap="0.5rem" class="rz-p-sm-12">
+                    <RadzenLabel Text="Select Values" Component="DropDownMultipleChips"/>
+                    <RadzenDropDown @bind-Value="@postModel.CategoryIds" Data="@Categories"
+                                    TextProperty="@nameof(Category.Name)" ValueProperty="@nameof(Category.CategoryId)"
+                                    Name="DropDownMultipleChips"
+                                    Multiple="true" AllowClear="true" Placeholder="Select categories" Chips="true"
+                                    Style="width: 100%; max-width: 400px;"/>
                 </RadzenStack>
             </div>
-    
+
             <button type="submit" class="btn btn-primary mt-3">Publish</button>
         </EditForm>
     </div>
@@ -92,7 +97,7 @@
         font-weight: bold;
         display: block;
     }
-    
+
     .sidebar li:hover {
         background-color: #2e2e2e;
         cursor: pointer;
@@ -108,52 +113,52 @@
         border-color: #e0e0e0;
         color: #e0e0e0;
     }
-    
+
     .btn-outline-light:hover {
         background-color: #e0e0e0;
         color: #121212;
     }
-    
+
     .form-group {
         margin-bottom: 1.5rem;
     }
-    
+
     .form-control {
         background-color: #2d2d2d;
         border: 1px solid #3f3f3f;
         color: #e0e0e0;
         padding: 10px;
     }
-    
+
     .form-control:focus {
         background-color: #2d2d2d;
         border-color: #5f5f5f;
         color: #e0e0e0;
         box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.15);
     }
-    
+
     label {
         color: #e0e0e0;
         margin-bottom: 0.5rem;
         display: block;
     }
-    
+
     .btn-primary {
         background-color: #375a7f;
         border-color: #375a7f;
     }
-    
+
     .btn-primary:hover {
         background-color: #2b4764;
         border-color: #2b4764;
     }
-    
+
     .alert-danger {
         background-color: #542b2b;
         border-color: #842029;
         color: #ea868f;
     }
-    
+
     #editor-container {
         height: 300px;
         background-color: #1f1f1f;
@@ -162,29 +167,29 @@
         margin-bottom: 20px;
         border-radius: 4px;
     }
-    
+
 
     .rz-dropdown {
         background-color: #2d2d2d;
         border-color: #3f3f3f;
         color: #e0e0e0;
     }
-    
+
     .rz-dropdown:hover, .rz-dropdown:focus {
         background-color: #2d2d2d;
         border-color: #5f5f5f;
     }
-    
+
     .rz-dropdown-item, .rz-dropdown-items {
         background-color: #2d2d2d;
         color: #e0e0e0;
     }
-    
+
     .rz-dropdown-item:hover {
         background-color: #3f3f3f;
         color: #ffffff;
     }
-    
+
     .rz-chip {
         background-color: #375a7f;
         color: #e0e0e0;
@@ -194,18 +199,20 @@
 @code {
     private string? Username;
     private string? ErrorMessage;
-    
+
     private PublishPostRequest postModel = new();
     private List<Category>? Categories;
-    
+
     protected override async Task OnInitializedAsync()
     {
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
-        if (!authState.User.Identity?.IsAuthenticated == true && !authState.User.IsInRole("Author")) {
+        if (!authState.User.Identity?.IsAuthenticated == true && !authState.User.IsInRole("Author"))
+        {
             NavigationManager.NavigateTo("/author");
         }
+
         Username = authState.User.Identity?.Name;
-        
+
         try
         {
             Categories = await CategoryService.GetAllCategoriesAsync();
@@ -220,11 +227,12 @@
         }
     }
 
-    private async Task OnClickLogout() {
+    private async Task OnClickLogout()
+    {
         await AuthService.LogoutAsync();
         NavigationManager.NavigateTo("/author");
     }
-    
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -235,14 +243,15 @@
 
     private async Task PublishPost()
     {
-        string? apiUrl = Http.BaseAddress?.ToString()?.TrimEnd('/');
-    
+        var apiUrl = Http.BaseAddress?.ToString()?.TrimEnd('/');
+
         if (string.IsNullOrEmpty(apiUrl))
         {
             ErrorMessage = "Failed to retrieve API address";
             return;
         }
-        string htmlContent = await JS.InvokeAsync<string>("getQuillHtml", apiUrl);
+
+        var htmlContent = await JS.InvokeAsync<string>("getQuillHtml", apiUrl);
 
         var textContent = Regex.Replace(htmlContent, "<.*?>", string.Empty);
         if (string.IsNullOrWhiteSpace(textContent) || textContent.Trim().Length < 10)
@@ -250,7 +259,7 @@
             ErrorMessage = "The content of the post must be at least 10 characters long";
             return;
         }
-        
+
         PublishPostRequest newPost = new()
         {
             Title = postModel.Title,
@@ -268,4 +277,5 @@
             ErrorMessage = result.Message;
         }
     }
+
 }

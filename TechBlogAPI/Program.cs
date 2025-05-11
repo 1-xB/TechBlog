@@ -26,12 +26,13 @@ public class Program
                     .AllowAnyMethod();
             });
         });
-        
+
         builder.Services.AddControllers()
-        .AddJsonOptions(options =>
-        {
-            options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
-        });
+            .AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.ReferenceHandler =
+                    System.Text.Json.Serialization.ReferenceHandler.Preserve;
+            });
         // JWT Configuration
         // Configure JWT settings
         builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JWT"));
@@ -52,7 +53,8 @@ public class Program
                     ValidateIssuerSigningKey = true,
                     ValidIssuer = builder.Configuration["JWT:Issuer"],
                     ValidAudience = builder.Configuration["JWT:Audience"],
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:Key"])),
+                    IssuerSigningKey =
+                        new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:Key"])),
                     ClockSkew = TimeSpan.Zero // Remove delay of token when expire
                 };
             });
@@ -63,14 +65,14 @@ public class Program
             options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
             options.AddPolicy("AuthorOnly", policy => policy.RequireRole("Author", "Admin"));
         });
-        
+
         // MySQL Server connection string
         var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
         builder.Services.AddDbContext<DatabaseContext>(options =>
             options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
-        
+
         builder.Services.AddScoped<IAuthService, AuthService>();
-        
+
         // Add services to the container.
         builder.Services.AddAuthorization();
 
@@ -85,7 +87,7 @@ public class Program
             var dbContext = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
             dbContext.Database.Migrate();
         }
-        
+
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
         {
@@ -97,13 +99,13 @@ public class Program
             .AllowAnyOrigin()
             .AllowAnyMethod()
             .AllowAnyHeader());
-        
+
         // Routes
         app.MapPostRoutes();
         app.MapAuthRoutes();
         app.MapCategoriesRoutes();
         app.MapImagesEndpoints();
-        
+
         app.UseHttpsRedirection();
 
         app.UseAuthentication();
@@ -115,9 +117,9 @@ public class Program
                 Path.Combine(Directory.GetCurrentDirectory(), "images")),
             RequestPath = "/images"
         });
-        
+
         app.UseAntiforgery();
-        
+
         app.Run();
     }
 }

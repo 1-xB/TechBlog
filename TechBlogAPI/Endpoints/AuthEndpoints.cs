@@ -13,117 +13,92 @@ public static class AuthEndpoints
 
         group.MapPost("/register", async (IAuthService auth, RegisterDto model) =>
         {
-            if (string.IsNullOrWhiteSpace(model.Username) || string.IsNullOrWhiteSpace(model.Email) || string.IsNullOrWhiteSpace(model.Password)) {
+            if (string.IsNullOrWhiteSpace(model.Username) || string.IsNullOrWhiteSpace(model.Email) ||
+                string.IsNullOrWhiteSpace(model.Password))
                 return Results.BadRequest(new { message = "All fields are required." });
-            }
             var result = await auth.RegisterAsync(model, "User");
-            if (!result.Succeeded)
-            {
-                return Results.BadRequest(new {message = result.Message});
-            }
+            if (!result.Succeeded) return Results.BadRequest(new { message = result.Message });
 
-            return Results.Ok(new {message = result.Message});
+            return Results.Ok(new { message = result.Message });
         });
 
-        group.MapPost("register-author", [Authorize(Policy = "AdminOnly")] async (IAuthService auth, RegisterAuthorDto model) => {
-            if (string.IsNullOrWhiteSpace(model.Username) || string.IsNullOrWhiteSpace(model.Email) 
-            || string.IsNullOrWhiteSpace(model.Password) || string.IsNullOrWhiteSpace(model.FirstName) || string.IsNullOrWhiteSpace(model.LastName))
+        group.MapPost("register-author", [Authorize(Policy = "AdminOnly")]
+            async (IAuthService auth, RegisterAuthorDto model) =>
             {
-                return Results.BadRequest(new { message = "All fields are required." });
-            }
-            RegisterDto registerDto = new() {
-                Username = model.Username,
-                Email = model.Email,
-                Password = model.Password
-            };
-            var result = await auth.RegisterAsync(registerDto, "Author", model.FirstName, model.LastName);
-            if (!result.Succeeded)
+                if (string.IsNullOrWhiteSpace(model.Username) || string.IsNullOrWhiteSpace(model.Email)
+                                                              || string.IsNullOrWhiteSpace(model.Password) ||
+                                                              string.IsNullOrWhiteSpace(model.FirstName) ||
+                                                              string.IsNullOrWhiteSpace(model.LastName))
+                    return Results.BadRequest(new { message = "All fields are required." });
+                RegisterDto registerDto = new()
+                {
+                    Username = model.Username,
+                    Email = model.Email,
+                    Password = model.Password
+                };
+                var result = await auth.RegisterAsync(registerDto, "Author", model.FirstName, model.LastName);
+                if (!result.Succeeded) return Results.BadRequest(new { message = result.Message });
+
+                return Results.Ok(new { message = result.Message });
+            });
+
+        group.MapPost("register-admin", [Authorize(Policy = "AdminOnly")]
+            async (IAuthService auth, RegisterDto model) =>
             {
-                return Results.BadRequest(new {message = result.Message});
-            }
+                if (string.IsNullOrWhiteSpace(model.Username) || string.IsNullOrWhiteSpace(model.Email) ||
+                    string.IsNullOrWhiteSpace(model.Password))
+                    return Results.BadRequest(new { message = "All fields are required." });
+                var result = await auth.RegisterAsync(model, "Admin");
+                if (!result.Succeeded) return Results.BadRequest(new { message = result.Message });
 
-            return Results.Ok(new {message = result.Message});
-        });
-
-        group.MapPost("register-admin", [Authorize(Policy = "AdminOnly")] async (IAuthService auth, RegisterDto model) => {
-            if (string.IsNullOrWhiteSpace(model.Username) || string.IsNullOrWhiteSpace(model.Email) || string.IsNullOrWhiteSpace(model.Password)) {
-                return Results.BadRequest(new { message = "All fields are required." });
-            }
-            var result = await auth.RegisterAsync(model, "Admin");
-            if (!result.Succeeded)
-            {
-                return Results.BadRequest(new {message = result.Message});
-            }
-
-            return Results.Ok(new {message = result.Message});
-        });
+                return Results.Ok(new { message = result.Message });
+            });
 
         group.MapPost("/login", async (IAuthService auth, LoginDto model) =>
         {
             var result = await auth.LoginAsync(model);
-            if (!result.Succeeded)
-            {
-                return Results.BadRequest(new {message = result.Message});
-            }
+            if (!result.Succeeded) return Results.BadRequest(new { message = result.Message });
 
             return Results.Ok(result.Response);
-            
         });
 
         group.MapPost("/login-admin", async (IAuthService auth, LoginDto model) =>
         {
             var result = await auth.LoginAsync(model, "Admin");
-            if (!result.Succeeded)
-            {
-                return Results.BadRequest(new {message = result.Message});
-            }
+            if (!result.Succeeded) return Results.BadRequest(new { message = result.Message });
 
             return Results.Ok(result.Response);
-            
         });
 
         group.MapPost("/login-author", async (IAuthService auth, LoginDto model) =>
         {
             var result = await auth.LoginAsync(model, "Author");
-            if (!result.Succeeded)
-            {
-                return Results.BadRequest(new {message = result.Message});
-            }
+            if (!result.Succeeded) return Results.BadRequest(new { message = result.Message });
 
             return Results.Ok(result.Response);
-            
         });
 
         group.MapPost("/refresh-token", async (IAuthService auth, RefreshTokenDto model) =>
         {
             var result = await auth.RefreshTokenAsync(model.RefreshToken);
-            if (!result.Succeeded)
-            {
-                return Results.Unauthorized();
-            }
-            
+            if (!result.Succeeded) return Results.Unauthorized();
+
             return Results.Ok(result.Response);
         });
-        
+
         group.MapPost("/revoke-token", async (IAuthService auth, ClaimsPrincipal user) =>
             {
                 var username = user.Identity?.Name;
-                if (string.IsNullOrEmpty(username))
-                {
-                    return Results.BadRequest(new { message = "Username not found." });
-                }
+                if (string.IsNullOrEmpty(username)) return Results.BadRequest(new { message = "Username not found." });
 
                 var result = await auth.RevokeTokenAsync(username);
-                if (!result)
-                {
-                    return Results.BadRequest(new { message = "Token revocation failed." });
-                }
+                if (!result) return Results.BadRequest(new { message = "Token revocation failed." });
 
                 return Results.Ok(new { message = "Token revoked successfully." });
             })
-            .RequireAuthorization(); 
-            
-        
+            .RequireAuthorization();
+
+
         return group;
     }
 }

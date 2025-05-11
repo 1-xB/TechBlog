@@ -15,19 +15,19 @@ public class Program
         var builder = WebAssemblyHostBuilder.CreateDefault(args);
         builder.RootComponents.Add<App>("#app");
         builder.RootComponents.Add<HeadOutlet>("head::after");
-        
+
         builder.Logging.SetMinimumLevel(LogLevel.Debug);
 
         // HttpClient Configuration
         builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://localhost:5208") });
-        
+
         builder.Services.AddScoped<IPostService, PostService>();
         builder.Services.AddScoped<ICategoryService, CategoryService>();
-        
+
         builder.Services.AddScoped<AuthService>();
         builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
         builder.Services.AddAuthorizationCore();
-        
+
         builder.Services.AddRadzenComponents();
 
         await builder.Build().RunAsync();

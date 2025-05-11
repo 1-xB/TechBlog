@@ -14,13 +14,13 @@
         color: #fff;
         padding: 10px 20px;
     }
-    
+
     .admin-header-content {
         display: flex;
         justify-content: space-between;
         align-items: center;
     }
-    
+
     .admin-profile span {
         margin-right: 10px;
     }
@@ -29,6 +29,7 @@
         border-color: #fff;
         color: #fff;
     }
+
     .btn-outline-light:hover {
         background-color: #fff;
         color: #000;
@@ -36,9 +37,7 @@
 </style>
 
 @code {
-    [Parameter] 
-    public string Username { get; set; } = "Administrator";
+    [Parameter] public string Username { get; set; } = "Administrator";
 
-    [Parameter]
-    public EventCallback OnLogout { get; set; }
+    [Parameter] public EventCallback OnLogout { get; set; }
 }

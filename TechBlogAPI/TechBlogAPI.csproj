@@ -7,35 +7,35 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.4" />
-        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.4" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.4" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Abstractions" Version="9.0.4" />
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.4"/>
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.4"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.4"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Abstractions" Version="9.0.4"/>
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.4">
-          <PrivateAssets>all</PrivateAssets>
-          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.4">
-          <PrivateAssets>all</PrivateAssets>
-          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.8.0" />
-        <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="9.0.0-preview.3.efcore.9.0.0" />
-        <PackageReference Include="Scalar.AspNetCore" Version="2.1.16" />
-        <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.8.0" />
+        <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.8.0"/>
+        <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="9.0.0-preview.3.efcore.9.0.0"/>
+        <PackageReference Include="Scalar.AspNetCore" Version="2.1.16"/>
+        <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.8.0"/>
     </ItemGroup>
 
     <ItemGroup>
-      <Reference Include="Microsoft.IdentityModel.Tokens">
-        <HintPath>..\..\..\..\.nuget\packages\microsoft.identitymodel.tokens\8.8.0\lib\net9.0\Microsoft.IdentityModel.Tokens.dll</HintPath>
-      </Reference>
-      <Reference Include="System.IdentityModel.Tokens.Jwt">
-        <HintPath>..\..\..\..\.nuget\packages\system.identitymodel.tokens.jwt\8.8.0\lib\net9.0\System.IdentityModel.Tokens.Jwt.dll</HintPath>
-      </Reference>
+        <Reference Include="Microsoft.IdentityModel.Tokens">
+            <HintPath>..\..\..\..\.nuget\packages\microsoft.identitymodel.tokens\8.8.0\lib\net9.0\Microsoft.IdentityModel.Tokens.dll</HintPath>
+        </Reference>
+        <Reference Include="System.IdentityModel.Tokens.Jwt">
+            <HintPath>..\..\..\..\.nuget\packages\system.identitymodel.tokens.jwt\8.8.0\lib\net9.0\System.IdentityModel.Tokens.Jwt.dll</HintPath>
+        </Reference>
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="images\" />
+        <Folder Include="images\"/>
     </ItemGroup>
 
 </Project>

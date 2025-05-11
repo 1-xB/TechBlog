@@ -8,7 +8,7 @@
 @inject AuthService AuthService
 
 
-<AuthorHeader  Username="@Username" OnLogout="OnClickLogout"></AuthorHeader>
+<AuthorHeader Username="@Username" OnLogout="OnClickLogout"></AuthorHeader>
 
 <div class="admin-container">
     <nav class="sidebar">
@@ -18,7 +18,7 @@
         </ul>
     </nav>
     <div class="content">
-        
+
         @if (!string.IsNullOrEmpty(FirstName) && !string.IsNullOrEmpty(LastName))
         {
             <h1>Hello @FirstName @LastName!</h1>
@@ -31,7 +31,7 @@
         {
             <h1>Hello!</h1>
         }
-        
+
 
     </div>
 </div>
@@ -68,6 +68,7 @@
         color: #fff;
         font-weight: bold;
     }
+
     .sidebar li:hover {
         background-color: #2e2e2e;
         cursor: pointer;
@@ -83,6 +84,7 @@
         border-color: #fff;
         color: #fff;
     }
+
     .btn-outline-light:hover {
         background-color: #fff;
         color: #000;
@@ -93,20 +95,24 @@
     private string? FirstName;
     private string? LastName;
     private string? Username;
+
     protected override async Task OnInitializedAsync()
     {
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
-        if (!authState.User.Identity?.IsAuthenticated == true && !authState.User.IsInRole("Author")) {
+        if (!authState.User.Identity?.IsAuthenticated == true && !authState.User.IsInRole("Author"))
+        {
             NavigationManager.NavigateTo("/author");
         }
 
-        FirstName = authState.User.FindFirst(ClaimTypes.GivenName)?.Value ;
-        LastName = authState.User.FindFirst(ClaimTypes.Surname)?.Value ;
+        FirstName = authState.User.FindFirst(ClaimTypes.GivenName)?.Value;
+        LastName = authState.User.FindFirst(ClaimTypes.Surname)?.Value;
         Username = authState.User.Identity?.Name;
     }
 
-    private async Task OnClickLogout() {
+    private async Task OnClickLogout()
+    {
         await AuthService.LogoutAsync();
         NavigationManager.NavigateTo("/author");
     }
+
 }
