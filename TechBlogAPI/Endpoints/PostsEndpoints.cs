@@ -7,6 +7,8 @@ using TechBlogAPI.Entity;
 
 namespace TechBlogAPI.Endpoints;
 
+// TODO : dodaj sprawdzanie czy zdjecie jest na serwerze
+// Todo : Dodaj usuwanie zdjęcia przy usunięciu posta
 public static class PostsEndpoints
 {
     public static RouteGroupBuilder MapPostRoutes(this WebApplication app)
@@ -22,6 +24,7 @@ public static class PostsEndpoints
                     {
                         post.PostId,
                         post.Title,
+                        post.PostImage,
                         post.Content,
                         post.CreatedAt,
                         post.UpdatedAt,
@@ -55,6 +58,7 @@ public static class PostsEndpoints
                 {
                     post.PostId,
                     post.Title,
+                    post.PostImage,
                     post.Content,
                     post.CreatedAt,
                     post.UpdatedAt,
@@ -87,6 +91,7 @@ public static class PostsEndpoints
             {
                 post.PostId,
                 post.Title,
+                post.PostImage,
                 post.Content,
                 post.CreatedAt,
                 post.UpdatedAt,
@@ -123,6 +128,7 @@ public static class PostsEndpoints
                     {
                         Content = newPost.Content,
                         Title = newPost.Title,
+                        PostImage = newPost.PostImage,
                         AuthorId = author.AuthorId,
                         CreatedAt = DateTime.UtcNow,
                         UpdatedAt = DateTime.UtcNow
@@ -145,6 +151,7 @@ public static class PostsEndpoints
                     {
                         post.PostId,
                         post.Title,
+                        post.PostImage,
                         post.Content,
                         post.CreatedAt,
                         post.UpdatedAt,

@@ -14,7 +14,7 @@ public static class ImagesEndpoints
         {
             try
             {
-                if (file == null) return Results.BadRequest("File is null");
+                if (file == null || !file.ContentType.StartsWith("image/")) return Results.BadRequest("Invalid file type.");
 
                 if (file.Length == 0) return Results.BadRequest("File length is 0");
 

@@ -17,6 +17,7 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options) : DbCont
             entity.HasKey(e => e.PostId);
             entity.Property(e => e.PostId).ValueGeneratedOnAdd().IsRequired();
             entity.Property(e => e.Title).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.PostImage).IsRequired();
             entity.Property(e => e.CreatedAt).IsRequired();
             entity.Property(e => e.UpdatedAt);
             entity.Property(e => e.AuthorId).IsRequired();
