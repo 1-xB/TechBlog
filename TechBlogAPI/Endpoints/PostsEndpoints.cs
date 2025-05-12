@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using TechBlogAPI.Data;
@@ -7,8 +8,7 @@ using TechBlogAPI.Entity;
 
 namespace TechBlogAPI.Endpoints;
 
-// TODO : dodaj sprawdzanie czy zdjecie jest na serwerze
-// Todo : Dodaj usuwanie zdjęcia przy usunięciu posta
+
 public static class PostsEndpoints
 {
     public static RouteGroupBuilder MapPostRoutes(this WebApplication app)
@@ -175,7 +175,7 @@ public static class PostsEndpoints
             });
 
         group.MapDelete("/{id:int}", [Authorize(Policy = "AuthorOnly")]
-            async (int id, DatabaseContext dbContext, ClaimsPrincipal user) =>
+            async (int id, DatabaseContext dbContext, ClaimsPrincipal user,HttpContext httpContext) =>
             {
                 try
                 {
@@ -184,6 +184,18 @@ public static class PostsEndpoints
 
                     if (!await CheckEditPermissions(user, post, dbContext)) return Results.Forbid();
 
+                    var postImage = post.PostImage;
+                    if (!string.IsNullOrEmpty(postImage))
+                    {
+                        postImage = Path.GetFileName(postImage);
+                        var uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "images");
+                        var filePath = Path.Combine(uploadPath, postImage);
+                        if (File.Exists(filePath)) File.Delete(filePath);
+                    }
+
+                    var htmlContent = post.Content;
+                    DeleteImagesFromHtml(htmlContent, httpContext);
+                    
                     dbContext.Posts.Remove(post);
                     await dbContext.SaveChangesAsync();
                     return Results.Ok(new { message = $"Post with id {id} was successfully deleted" });
@@ -258,5 +270,26 @@ public static class PostsEndpoints
         var isPostAuthor = author != null && post.AuthorId == author.AuthorId;
 
         return isAdmin || isPostAuthor;
+    }
+
+
+    private static void DeleteImagesFromHtml(string htmlContent, HttpContext httpContext)
+    {
+        string regexImgSrc = @"<img[^>]*?src\s*=\s*[""']?([^'"" >]+?)[ '""][^>]*?>";
+        MatchCollection matchesImgSrc = Regex.Matches(htmlContent, regexImgSrc, RegexOptions.IgnoreCase | RegexOptions.Singleline);
+        var request = httpContext.Request;
+        var baseImageUrl = $"{request.Scheme}://{request.Host}/images";
+        var uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "images");
+        foreach (Match m in matchesImgSrc)
+        {
+            string imageUrl = m.Groups[1].Value;
+            if (imageUrl.Contains(baseImageUrl))
+            {
+                var fileName = Path.GetFileName(imageUrl);
+                var filePath = Path.Combine(uploadPath, fileName);
+                if (File.Exists(filePath)) File.Delete(filePath);
+            }
+        }
+        
     }
 }
