@@ -165,12 +165,17 @@ public class AuthService(DatabaseContext context, IOptions<JwtSettings> jwtSetti
     {
         using var hmac = new HMACSHA512(storedSalt);
         var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
+        
+        int result = 0;
+        
+        for (var i = 0; i < computedHash.Length; i++) {
+            // XOR operation returns 0 for identical bytes
+            // Operations are performed for ALL bytes, regardless of differences
+            // Timing Attacks will no longer work.
+            result |= computedHash[i] ^ storedHash[i];
+        }
 
-        for (var i = 0; i < computedHash.Length; i++)
-            if (computedHash[i] != storedHash[i])
-                return false;
-
-        return true;
+        return result == 0;
     }
 
     // ---------------------------- Tokens ----------------------------
