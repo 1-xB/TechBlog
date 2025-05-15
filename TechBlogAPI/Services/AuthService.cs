@@ -12,8 +12,11 @@ using TechBlogAPI.Settings;
 
 namespace TechBlogAPI.Services;
 
-public class AuthService(DatabaseContext context, IOptions<JwtSettings> jwtSettings) : IAuthService
+public class AuthService(DatabaseContext context, IOptions<JwtSettings> jwtSettings, BruteForceDefenseService bruteForceDefenseService) : IAuthService
 {
+
+    private readonly BruteForceDefenseService _bruteForceDefenseService = bruteForceDefenseService;
+    
     public async Task<(bool Succeeded, string Message)> RegisterAsync(RegisterDto model, string role,
         string? firstName = null, string? lastName = null)
     {
@@ -64,13 +67,27 @@ public class AuthService(DatabaseContext context, IOptions<JwtSettings> jwtSetti
     public async Task<(bool Succeeded, AuthResponseDto? Response, string Message)> LoginAsync(LoginDto model,
         string? role = null)
     {
+        await Task.Delay(await _bruteForceDefenseService.GetDelayForUserAsync(model.Username));
+        if (await _bruteForceDefenseService.IsLockedOutAsync(model.Username))
+        {
+            return (false, null, "The ability to log in to this account has been temporarily blocked.");
+        }
+        
         var user = await context.Users.Include(u => u.Author).FirstOrDefaultAsync(u => u.Username == model.Username);
         if (user == null || !VerifyPasswordHash(model.Password, user.PasswordHash, user.PasswordSalt))
+        {
+            await this._bruteForceDefenseService.RecordAttemptAsync(model.Username, false);
             return (false, null, "Invalid username or password");
+        }
+
 
         if (user is not null && role is not null && user.Role != role)
+        {
+            await this._bruteForceDefenseService.RecordAttemptAsync(model.Username, false);
             return (false, null, "Cannot log in : No permissions.");
-
+        }
+            
+        await this._bruteForceDefenseService.RecordAttemptAsync(model.Username, true);
         // Tokens
         var accessToken = GenerateAccessToken(user);
         var refreshToken = GenerateRefreshToken();

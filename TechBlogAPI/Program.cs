@@ -16,7 +16,11 @@ public class Program
     public static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
-
+        
+        // brute force defense
+        builder.Services.AddScoped<BruteForceDefenseService>();
+        builder.Services.AddHttpContextAccessor();
+        
         builder.Services.AddCors(options =>
         {
             options.AddPolicy("AllowAll", policy =>
