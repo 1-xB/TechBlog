@@ -14,4 +14,5 @@ public class PostModel
     public DateTime UpdatedAt { get; set; }
     public Author Author { get; set; }
     public List<Category> Categories { get; set; }
+    public string PostImage { get; set; }
 }

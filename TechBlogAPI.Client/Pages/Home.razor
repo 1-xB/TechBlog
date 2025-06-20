@@ -1,7 +1,200 @@
 ﻿@page "/"
+@using TechBlogAPI.Client.Models
+@using TechBlogAPI.Client.Services
+@inject IPostService PostService
+@inject ICategoryService CategoryService
+@inject NavigationManager NavigationManager
 
-<PageTitle>Home</PageTitle>
+<div class="header">
+    <h1>TechBlog</h1>
+    <p>Your Source for Tech News and Tutorials</p>
+    <div class="header-buttons">
+        <button class="btn btn-primary"@onclick='() => NavigationManager.NavigateTo("/posts")'>Browse Articles</button>
+    </div>
+</div>
 
-<h1>Hello, world!</h1>
+<div class="container mt-4">
+    @if (IsLoading)
+    {
+        <div class="text-center my-4">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    }
+    else if (!string.IsNullOrEmpty(ErrorMessage))
+    {
+        <div class="alert alert-danger">@ErrorMessage</div>
+    }
+    else
+    {
+        <div class="row mb-4">
+            <div class="col-12">
+                <h2>Popular Categories</h2>
+                <div class="categories-container">
+                    @if (Categories != null && Categories.Any())
+                    {
+                        @foreach (var category in Categories.Take(5))
+                        {
+                            <span class="category-tag" @onclick='() => NavigationManager.NavigateTo($"/category/{category.CategoryId}")'>
+                                @category.Name
+                            </span>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
 
-Welcome to your new app.
+        <div class="row mb-5">
+            <div class="col-12">
+                <h2>Latest Articles</h2>
+            </div>
+            @if (LatestPosts != null && LatestPosts.Any())
+            {
+                @foreach (var post in LatestPosts)
+                {
+                    <div class="col-md-6 col-lg-4 mb-4">
+                        <div class="post-card" @onclick="() => NavigateToPost(post.PostId)">
+                            @if (!string.IsNullOrEmpty(post.PostImage))
+                            {
+                                <div class="post-image">
+                                    <img src="@post.PostImage" alt="@post.Title">
+                                </div>
+                            }
+                            <div class="post-content">
+                                <h3>@post.Title</h3>
+                                <p class="post-date">@post.CreatedAt.ToString("MMM dd, yyyy")</p>
+                                <p class="post-author">By @(post.Author?.FirstName) @(post.Author?.LastName)</p>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="col-12">
+                    <p>No posts available.</p>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+<style>
+    .header {
+        background-color: #1a1a1a;
+        color: white;
+        padding: 60px 20px;
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    .header h1 {
+        font-size: 2.5rem;
+        margin-bottom: 15px;
+    }
+
+    .header p {
+        font-size: 1.2rem;
+        margin-bottom: 25px;
+    }
+
+    .header-buttons {
+        margin-top: 20px;
+    }
+
+    .categories-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin: 15px 0 30px 0;
+    }
+
+    .category-tag {
+        background-color: #333;
+        color: white;
+        padding: 6px 12px;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    .category-tag:hover {
+        background-color: #444;
+    }
+
+    .post-card {
+        background-color: #2a2a2a;
+        border-radius: 5px;
+        overflow: hidden;
+        height: 100%;
+        cursor: pointer;
+    }
+
+    .post-image {
+        height: 180px;
+        overflow: hidden;
+    }
+
+    .post-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .post-content {
+        padding: 15px;
+    }
+
+    .post-content h3 {
+        font-size: 1.2rem;
+        margin-bottom: 10px;
+        color: white;
+    }
+
+    .post-date, .post-author {
+        font-size: 0.9rem;
+        color: #aaa;
+        margin: 5px 0;
+    }
+</style>
+
+@code {
+    private List<PostModel> LatestPosts { get; set; }
+    private List<Category> Categories { get; set; }
+    private bool IsLoading = true;
+    private string ErrorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            // Get latest posts
+            var allPosts = await PostService.GetAllPostsAsync();
+            if (allPosts != null)
+            {
+                LatestPosts = allPosts
+                    .OrderByDescending(p => p.CreatedAt)
+                    .Take(6)
+                    .ToList();
+            }
+
+            // Get categories
+            Categories = await CategoryService.GetAllCategoriesAsync();
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Error loading data: {ex.Message}";
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private void NavigateToPost(int postId)
+    {
+        NavigationManager.NavigateTo($"/post/{postId}");
+    }
+
+}
+}

@@ -17,6 +17,9 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
         
+        // Configure specific port
+        builder.WebHost.UseUrls("http://localhost:5005", "https://localhost:5006");
+        
         // brute force defense
         builder.Services.AddScoped<BruteForceDefenseService>();
         builder.Services.AddHttpContextAccessor();
@@ -95,9 +98,11 @@ public class Program
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
         {
-            app.MapOpenApi();
-            app.MapScalarApiReference();
+            
+            
         }
+        app.MapOpenApi();
+        app.MapScalarApiReference();
 
         app.UseCors(builder => builder
             .AllowAnyOrigin()
@@ -115,10 +120,16 @@ public class Program
         app.UseAuthentication();
         app.UseAuthorization();
 
+        // Create images directory if it doesn't exist
+        var imagesPath = Path.Combine(Directory.GetCurrentDirectory(), "images");
+        if (!Directory.Exists(imagesPath))
+        {
+            Directory.CreateDirectory(imagesPath);
+        }
+
         app.UseStaticFiles(new StaticFileOptions
         {
-            FileProvider = new PhysicalFileProvider(
-                Path.Combine(Directory.GetCurrentDirectory(), "images")),
+            FileProvider = new PhysicalFileProvider(imagesPath),
             RequestPath = "/images"
         });
 

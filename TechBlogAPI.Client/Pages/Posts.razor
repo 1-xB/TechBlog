@@ -1,0 +1,339 @@
+@page "/posts"
+@using TechBlogAPI.Client.Models
+@using TechBlogAPI.Client.Services
+@inject IPostService PostService
+@inject ICategoryService CategoryService
+@inject NavigationManager NavigationManager
+
+<div class="header">
+    <h1>All Articles</h1>
+</div>
+
+<div class="container mt-4">
+    @if (IsLoading)
+    {
+        <div class="text-center my-4">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    }
+    else if (!string.IsNullOrEmpty(ErrorMessage))
+    {
+        <div class="alert alert-danger">@ErrorMessage</div>
+    }
+    else
+    {
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="input-group">
+                    <input type="text" class="form-control" placeholder="Search articles..." 
+                           @bind="searchTerm" @bind:event="oninput" @onkeyup="HandleSearch" />
+                    <button class="btn btn-outline-secondary" @onclick="HandleSearch">Search</button>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="categories-filter">
+                    <span class="filter-label">Filter by category:</span>
+                    <div class="categories-container">
+                        <span class="category-tag @(selectedCategoryId == 0 ? "active" : "")" 
+                              @onclick="() => FilterByCategory(0)">
+                            All
+                        </span>
+                        @if (Categories != null)
+                        {
+                            @foreach (var category in Categories)
+                            {
+                                <span class="category-tag @(selectedCategoryId == category.CategoryId ? "active" : "")" 
+                                      @onclick="() => FilterByCategory(category.CategoryId)">
+                                    @category.Name
+                                </span>
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            @if (FilteredPosts != null && FilteredPosts.Any())
+            {
+                @foreach (var post in FilteredPosts)
+                {
+                    <div class="col-md-6 col-lg-4 mb-4">
+                        <div class="post-card" @onclick="() => NavigateToPost(post.PostId)">
+                            @if (!string.IsNullOrEmpty(post.PostImage))
+                            {
+                                <div class="post-image">
+                                    <img src="@post.PostImage" alt="@post.Title">
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="post-image-placeholder"></div>
+                            }
+                            <div class="post-content">
+                                <h3>@post.Title</h3>
+                                <p class="post-date">@post.CreatedAt.ToString("MMM dd, yyyy")</p>
+                                <p class="post-author">By @(post.Author?.FirstName) @(post.Author?.LastName)</p>
+                                @if (post.Categories != null && post.Categories.Any())
+                                {
+                                    <div class="post-categories">
+                                        @foreach (var category in post.Categories.Take(2))
+                                        {
+                                            <span class="post-category">@category.Name</span>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="col-12">
+                    <p class="text-center">No posts found.</p>
+                </div>
+            }
+        </div>
+
+        @if (TotalPages > 1)
+        {
+            <div class="pagination">
+                @for (int i = 1; i <= TotalPages; i++)
+                {
+                    int pageNumber = i;
+                    <button class="page-btn @(currentPage == pageNumber ? "active" : "")" 
+                            @onclick="() => GoToPage(pageNumber)">
+                        @pageNumber
+                    </button>
+                }
+            </div>
+        }
+    }
+</div>
+
+<style>
+    .header {
+        background-color: #1a1a1a;
+        color: white;
+        padding: 40px 20px;
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .header h1 {
+        margin: 0;
+    }
+
+    .form-control {
+        background-color: #333;
+        border-color: #444;
+        color: white;
+    }
+    
+    .form-control:focus {
+        background-color: #333;
+        color: white;
+    }
+
+    .filter-label {
+        display: block;
+        margin-bottom: 10px;
+        color: #aaa;
+    }
+
+    .categories-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .category-tag {
+        background-color: #333;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.9rem;
+    }
+
+    .category-tag:hover {
+        background-color: #444;
+    }
+
+    .category-tag.active {
+        background-color: #375a7f;
+    }
+
+    .post-card {
+        background-color: #2a2a2a;
+        border-radius: 5px;
+        overflow: hidden;
+        height: 100%;
+        cursor: pointer;
+    }
+
+    .post-image, .post-image-placeholder {
+        height: 180px;
+        overflow: hidden;
+    }
+
+    .post-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .post-image-placeholder {
+        background-color: #333;
+    }
+
+    .post-content {
+        padding: 15px;
+    }
+
+    .post-content h3 {
+        font-size: 1.2rem;
+        margin-bottom: 10px;
+        color: white;
+    }
+
+    .post-date, .post-author {
+        font-size: 0.9rem;
+        color: #aaa;
+        margin: 5px 0;
+    }
+
+    .post-categories {
+        margin-top: 10px;
+    }
+
+    .post-category {
+        background-color: #444;
+        color: white;
+        padding: 3px 8px;
+        border-radius: 3px;
+        font-size: 0.8rem;
+        margin-right: 5px;
+    }
+
+    .pagination {
+        display: flex;
+        justify-content: center;
+        margin-top: 30px;
+        gap: 5px;
+    }
+
+    .page-btn {
+        background-color: #333;
+        border: none;
+        color: white;
+        padding: 6px 12px;
+        border-radius: 4px;
+    }
+
+    .page-btn.active {
+        background-color: #375a7f;
+    }
+</style>
+
+@code {
+    private List<PostModel> AllPosts { get; set; }
+    private List<PostModel> FilteredPosts { get; set; }
+    private List<Category> Categories { get; set; }
+    private bool IsLoading = true;
+    private string ErrorMessage;
+    private string searchTerm = "";
+    private int selectedCategoryId = 0;
+    
+    // Simple pagination
+    private int currentPage = 1;
+    private int pageSize = 9;
+    private int TotalPages => (int)Math.Ceiling((double)(filteredCount) / pageSize);
+    private int filteredCount = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            // Get all posts
+            AllPosts = await PostService.GetAllPostsAsync();
+            
+            // Get categories
+            Categories = await CategoryService.GetAllCategoriesAsync();
+            
+            // Apply initial filtering (show all)
+            ApplyFilters();
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Error loading data: {ex.Message}";
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private void HandleSearch()
+    {
+        currentPage = 1;
+        ApplyFilters();
+    }
+
+    private void FilterByCategory(int categoryId)
+    {
+        selectedCategoryId = categoryId;
+        currentPage = 1;
+        ApplyFilters();
+    }
+
+    private void GoToPage(int page)
+    {
+        currentPage = page;
+        ApplyFilters();
+    }
+
+    private void ApplyFilters()
+    {
+        if (AllPosts == null) return;
+
+        // Start with all posts
+        IEnumerable<PostModel> query = AllPosts;
+        
+        // Apply category filter if selected
+        if (selectedCategoryId > 0)
+        {
+            query = query.Where(p => p.Categories != null && 
+                                    p.Categories.Any(c => c.CategoryId == selectedCategoryId));
+        }
+        
+        // Apply search term filter if provided
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            var search = searchTerm.ToLower();
+            query = query.Where(p => 
+                p.Title.ToLower().Contains(search) || 
+                (p.Content != null && p.Content.ToLower().Contains(search)));
+        }
+        
+        // Order by date (newest first)
+        query = query.OrderByDescending(p => p.CreatedAt);
+        
+        // Store count for pagination
+        filteredCount = query.Count();
+        
+        // Apply pagination
+        FilteredPosts = query
+            .Skip((currentPage - 1) * pageSize)
+            .Take(pageSize)
+            .ToList();
+    }
+
+    private void NavigateToPost(int postId)
+    {
+        NavigationManager.NavigateTo($"/post/{postId}");
+    }
+}

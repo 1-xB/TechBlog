@@ -93,4 +93,11 @@ public class PostService(HttpClient http, AuthService authService) : IPostServic
             return (false, $"Exception : {ex.Message}");
         }
     }
+    
+    public async Task<PostModel?> GetPostByIdAsync(int id)
+    {
+        var response = await http.GetAsync($"api/posts/{id}");
+        if (response.IsSuccessStatusCode) return await response.Content.ReadFromJsonAsync<PostModel>();
+        return null;
+    }
 }

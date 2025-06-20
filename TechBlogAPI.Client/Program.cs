@@ -15,11 +15,11 @@ public class Program
         var builder = WebAssemblyHostBuilder.CreateDefault(args);
         builder.RootComponents.Add<App>("#app");
         builder.RootComponents.Add<HeadOutlet>("head::after");
-
+        
         builder.Logging.SetMinimumLevel(LogLevel.Debug);
 
         // HttpClient Configuration
-        builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://localhost:5208") });
+        builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https://localhost:5006/") });
 
         builder.Services.AddScoped<IPostService, PostService>();
         builder.Services.AddScoped<ICategoryService, CategoryService>();

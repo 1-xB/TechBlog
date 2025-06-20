@@ -1,0 +1,252 @@
+@page "/post/{Id:int}"
+@using TechBlogAPI.Client.Models
+@using TechBlogAPI.Client.Services
+@inject IPostService PostService
+@inject NavigationManager NavigationManager
+
+<div class="container mt-4 mb-5">
+    @if (IsLoading)
+    {
+        <div class="text-center my-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    }
+    else if (!string.IsNullOrEmpty(ErrorMessage))
+    {
+        <div class="alert alert-danger">
+            <h4>Error</h4>
+            <p>@ErrorMessage</p>
+            <button class="btn btn-outline-light" @onclick='() => NavigationManager.NavigateTo("/posts")'>
+                Back to Posts
+            </button>
+        </div>
+    }
+    else if (post == null)
+    {
+        <div class="text-center my-5">
+            <h3>Post not found</h3>
+            <p>The post you're looking for doesn't exist or has been removed.</p>
+            <button class="btn btn-primary" @onclick='() => NavigationManager.NavigateTo("/posts")'>
+                Back to Posts
+            </button>
+        </div>
+    }
+    else
+    {
+        <div class="mb-4">
+            <button class="btn btn-outline-secondary" @onclick='() => NavigationManager.NavigateTo("/posts")'>
+                <i class="bi bi-arrow-left"></i> Back to Posts
+            </button>
+        </div>
+
+        <div class="post-detail">
+            @if (!string.IsNullOrEmpty(post.PostImage))
+            {
+                <div class="post-image-container">
+                    <img src="@post.PostImage" alt="@post.Title" class="post-image">
+                </div>
+            }
+
+            <div class="post-header">
+                <h1>@post.Title</h1>
+                
+                <div class="post-meta">
+                    <div class="post-info">
+                        <span class="post-date">@post.CreatedAt.ToString("MMMM dd, yyyy")</span>
+                        @if (post.Author != null)
+                        {
+                            <span class="post-author">
+                                By @(post.Author.FirstName) @(post.Author.LastName)
+                            </span>
+                        }
+                    </div>
+                    
+                    @if (post.Categories != null && post.Categories.Any())
+                    {
+                        <div class="post-categories">
+                            @foreach (var category in post.Categories)
+                            {
+                                <span class="post-category" @onclick='() => NavigationManager.NavigateTo($"/category/{category.CategoryId}")'>
+                                    @category.Name
+                                </span>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="post-content">
+                @((MarkupString)post.Content)
+            </div>
+        </div>
+    }
+</div>
+
+<style>
+    .post-detail {
+        background-color: #2a2a2a;
+        border-radius: 8px;
+        overflow: hidden;
+        padding: 0 0 30px 0;
+    }
+
+    .post-image-container {
+        width: 100%;
+        max-height: 500px;
+        overflow: hidden;
+    }
+
+    .post-image {
+        width: 100%;
+        object-fit: cover;
+    }
+
+    .post-header {
+        padding: 30px 30px 20px 30px;
+    }
+
+    .post-header h1 {
+        margin-bottom: 20px;
+        color: white;
+    }
+
+    .post-meta {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        color: #aaa;
+    }
+
+    .post-info {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .post-date, .post-author {
+        font-size: 0.9rem;
+    }
+
+    .post-categories {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 10px;
+    }
+
+    .post-category {
+        background-color: #375a7f;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 4px;
+        font-size: 0.9rem;
+        cursor: pointer;
+    }
+
+    .post-category:hover {
+        background-color: #2b4764;
+    }
+
+    .post-content {
+        padding: 0 30px;
+        line-height: 1.7;
+        color: #e0e0e0;
+    }
+
+    /* Style for content elements */
+    .post-content h2, .post-content h3, .post-content h4, .post-content h5, .post-content h6 {
+        margin-top: 30px;
+        margin-bottom: 15px;
+        color: white;
+    }
+
+    .post-content p {
+        margin-bottom: 20px;
+    }
+
+    .post-content img {
+        max-width: 100%;
+        height: auto;
+        margin: 20px 0;
+    }
+
+    .post-content ul, .post-content ol {
+        margin-bottom: 20px;
+        padding-left: 20px;
+    }
+
+    .post-content li {
+        margin-bottom: 8px;
+    }
+
+    .post-content a {
+        color: #5e9eff;
+        text-decoration: none;
+    }
+
+    .post-content a:hover {
+        text-decoration: underline;
+    }
+
+    .post-content pre {
+        background-color: #1a1a1a;
+        padding: 15px;
+        border-radius: 5px;
+        overflow-x: auto;
+        margin: 20px 0;
+    }
+
+    .post-content blockquote {
+        border-left: 4px solid #375a7f;
+        padding-left: 20px;
+        margin-left: 0;
+        font-style: italic;
+        color: #bbb;
+    }
+    
+    
+</style>
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private PostModel post { get; set; }
+    private bool IsLoading = true;
+    private string ErrorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadPostAsync();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (post == null || post.PostId != Id)
+        {
+            await LoadPostAsync();
+        }
+    }
+
+    private async Task LoadPostAsync()
+    {
+        try
+        {
+            IsLoading = true;
+            post = await PostService.GetPostByIdAsync(Id);
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Error loading post: {ex.Message}";
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+}
+}
